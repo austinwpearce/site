@@ -1,12 +1,13 @@
 ---
 title: Synoptic Sampling of Surface Waters
-date: '2016-12-31'
-slug: soil-texture
-tags: [Water, Sampling, Spatial]
-header:
-  caption: ''
-  image: ''
-summary: "Developing a spatial snapshot of water quality."
+date: 2016-12-31
+slug: synoptic-sampling-surface-waters
+tags: 
+- water
+- sampling
+- spatial
+image:
+description: Developing a spatial snapshot of water quality.
 ---
 
 # Background
