@@ -1,0 +1,4 @@
+theme = "hugo-theme-stack"
+baseURL = "http://example.org/"
+languageCode = "en-us"
+title = "My New Hugo Site"

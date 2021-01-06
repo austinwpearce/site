@@ -1,0 +1,127 @@
+---
+title: "Finding the Point of Zero Charge in R"
+date: '2018-04-07'
+header:
+  caption: ''
+  image: ''
+slug: point-zero-charge
+summary: "What is the point of this anyways?"
+tags: [Soil Chemistry]
+editor_options:
+  chunk_output_type: console
+---
+
+If you have your own data, import the data frame into *R* having set the variable names as follows:
+
+  + pH measurements in the first column as "pH"
+  + Anion exchange measurements in the second column as "Anion"
+  + Cation exchange measurements in the third (and last) column as "Cation"
+
+Or if you want to use the R code only, just input your PZC data manually into the respective strings (ph, anion, and cation). Make sure to fill out the strings in order of the observations, starting with the first PZC measurement. For this all to work, I might add, your cation exchange values should be positive when recorded, though it'll be treated as negative later during the calculation.
+
+```{r, data}
+pH <- c(3.2, 3.4, 3.75, 4.1, 4.85, 6.4, 6.7)
+
+Anion <- c(2.6, 2.3, 1.7, 1.4, 0.7, 0.055, 0.052)
+
+Cation <- c(0.76, 0.81, 0.64, 0.71, 1.34, 2.42, 3.31)
+
+# Cation exchange charges are treated negative
+Cation <- -Cation
+```
+
+The **net charge** is the difference between the anion and cation charges. Anion exchange capacity has positive net charge. Cation exchange capacity has negative net charge. Once net charge is calculated, arrange the data frames and sort by the net charge in descending order.
+
+```{r, net-charge-and-data-frames, message=FALSE, warning=FALSE}
+Net <- Anion + Cation
+
+# you'll need this package
+library('tidyverse')
+
+# stitch it all together in a data frame
+df.pzc <- tibble(pH, Anion, Cation, Net) %>% 
+  arrange(desc(Net))
+
+# long form of the data frame
+df.pzc2 <- tibble(pH, Anion, Cation, Net) %>% 
+  arrange(desc(Net)) %>% 
+  gather(key = "Measure",
+         value = "Value",
+         2:4)
+
+df.pzc2$Measure <- factor(df.pzc2$Measure,
+                           levels = c('Anion', 'Net', 'Cation'))
+```
+
+This code finds the exact point of zero charge, so that 1) it can be known exactly rather than eye-balling the plot, and 2) it can be plotted.
+
+```{r, find-pzc}
+# find pzc by calculating slope of line between last positive (AEC) point
+pos <- filter(df.pzc, Net > 0) %>%
+  select(pH, Net) %>% 
+  tail(n = 1)
+
+# and first negative (CEC) point
+neg <- filter(df.pzc, Net < 0) %>%
+  select(pH, Net) %>% 
+  head(n = 1)
+
+# and finding point of x-intercept
+slope <- (neg$Net - pos$Net) / (neg$pH - pos$pH)
+
+pzc <- ((0 - pos$Net) / slope) + pos$pH
+
+pzc.label <- round(pzc, digits = 2)
+
+```
+
+Make sure the plot scales properly to the first and last pH measurements.
+
+```{r, autoscale-plot}
+ph.first <- head(pH, n = 1)
+
+ph.last <- tail(pH, n = 1)
+```
+
+Then, plot PZC.
+
+```{r, plot, fig.asp=0.6}
+ggplot(data = df.pzc2,
+       aes(x = pH, y = Value, linetype = Measure)) +
+  geom_line() +
+  geom_point(size = 1) +
+  # zero line
+  geom_hline(yintercept = 0,
+             alpha = 0.4) +
+  # PZC point
+  geom_point(aes(x = pzc, y = 0),
+             color = 'red',
+             size = 3,
+             pch = 18) +
+  # annotations for labels
+  annotate(geom = 'text',
+           label = pzc.label,
+           x = pzc + 0.1, y = 0.3,
+           family = 'serif') +
+  annotate(geom = 'text',
+           label = "AEC +",
+           x = pH[[2]], y = 0.2,
+           family = 'serif') +
+  annotate(geom = 'text',
+           label = "CEC -",
+           x = pH[[2]], y = -0.2,
+           family = 'serif') +
+  scale_x_continuous(breaks = seq(from = ph.first,
+                                  to = ph.last,
+                                  by = (ph.last - ph.first))) +
+  scale_linetype_manual(values = c(2, 1, 3)) +
+  labs(title = "Point of Zero Charge",
+       x = "pH",
+       y = "Net Charge",
+       linetype = NULL) +
+  theme_classic(base_family = 'serif', base_size = 14)
+```
+
+To make your life easier, below is a link to the *R* code so that you do not have to copy and paste code chunks from this page.
+
+[*R* code file](/file/pzc-calculation.R)
