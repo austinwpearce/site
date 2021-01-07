@@ -1,9 +1,12 @@
 ---
 title: Ham Radio
-date: '2020-04-08'
 slug: ham-radio
-tags: [Map, GIS, Visualize, Ham Radio]
-summary:
+lastmod: 2020-04-08
+tags:
+- map
+- GIS
+- ham radio
+description: Wireless communication.
 ---
 
 Useful internet sources for ham radio:
@@ -39,16 +42,16 @@ Sourced from RepeaterBook. Red are VHF, and blue are UHF.
 
 My first radio: Baofeng UV-5R. Best way to get into ham radio.
 
-![](/img/sm-uv-5r.jpg)
+![](/ham_radio_uv_5r.jpg)
 
 From left to right: Baofeng UV-5R with 146.25 MHz tuned, 5/8th wave antenna, Baofeng UV-82 with 440 MHz stock antenna, and the Yaesu FT-WOODR my son found.
 
-![](/img/sm-three-radio.jpg)
+![](/ham_radio_three_radios.jpg)
 
 The glorious copper cactus--magnificent reception and splendid propogation.
 
-![](/img/sm-cactus.jpg)
+![](/ham_radio_cactus_jpole.jpg)
 
 And everyone needs a good radio icon for an application thumbnail or something.
 
-![](/img/radio.ico)
+![](/radio.ico)

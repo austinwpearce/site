@@ -8,48 +8,48 @@ title: Photos
 slug: photos
 ---
 
-![](/gallery/sm-photo-01.jpg)
+![](/photo_01.jpg)
 
-![](/gallery/sm-photo-02.jpg)
+![](/photo_02.jpg)
 
-![](/gallery/sm-photo-03.jpg)
+![](/photo_03.jpg)
 
-![](/gallery/sm-photo-04.jpg)
+![](/photo_04.jpg)
 
-![](/gallery/sm-photo-05.jpg)
+![](/photo_05.jpg)
 
-![](/gallery/sm-photo-06.jpg)
+![](/photo_06.jpg)
 
-![](/gallery/sm-photo-07.jpg)
+![](/photo_07.jpg)
 
-![](/gallery/sm-photo-08.jpg)
+![](/photo_08.jpg)
 
-![](/gallery/sm-photo-09.jpg)
+![](/photo_09.jpg)
 
-![](/gallery/sm-photo-10.jpg)
+![](/photo_10.jpg)
 
-![](/gallery/sm-photo-11.jpg)
+![](/photo_11.jpg)
 
-![](/gallery/sm-photo-12.jpg)
+![](/photo_12.jpg)
 
-![](/gallery/sm-photo-13.jpg)
+![](/photo_13.jpg)
 
-![](/gallery/sm-photo-14.jpg)
+![](/photo_14.jpg)
 
-![](/gallery/sm-photo-15.jpg)
+![](/photo_15.jpg)
 
-![](/gallery/sm-photo-16.jpg)
+![](/photo_16.jpg)
 
-![](/gallery/sm-photo-17.jpg)
+![](/photo_17.jpg)
 
-![](/gallery/sm-photo-18.jpg)
+![](/photo_18.jpg)
 
-![](/gallery/sm-photo-19.jpg)
+![](/photo_19.jpg)
 
-![](/gallery/sm-photo-20.jpg)
+![](/photo_20.jpg)
 
-![](/gallery/sm-photo-21.jpg)
+![](/photo_21.jpg)
 
-![](/gallery/sm-photo-22.jpg)
+![](/photo_22.jpg)
 
-### Did you notice any pattern that ties together the photographs?
+Did you notice any pattern that ties together the photographs?

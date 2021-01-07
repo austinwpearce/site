@@ -4,10 +4,12 @@ lastmod: "2021-12-20"
 description: A master list of resources and tools that have helped me work.
 tags:
 - tools
+- software
+- websites
 title: Tools
 ---
 
-A master list of resources and tools that have helped me work or that I find useful or neat. Installation files are for Windows versions of open-source software mentioned below, but follow the link to the website for Linux or Mac versions. :smile:
+A master list of resources and tools that have helped me work or that I find useful or neat. Installation files are for Windows versions of open-source software mentioned below, but follow the link to the website for Linux or Mac versions.
 
 # Agriculture & Environment
 
