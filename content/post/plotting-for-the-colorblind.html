@@ -1,0 +1,97 @@
+---
+title: "Plotting for the Color Blind"
+lastmod: '2019-10-24'
+slug: plotting-for-the-color-blind
+description: Green isn't always as red as it seems.
+tags:
+- accessibility
+- communication
+- visualization
+- R
+editor_options:
+  chunk_output_type: console
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p>The following example is intended to help people with normal color vision experience a little bit of what it is like to be color blind.</p>
+<p>Imagine sitting in the audience at a scientific presentation, and the presenter puts up the following key result.</p>
+<p><img src="/post/plotting-for-the-colorblind_files/figure-html/plot-cb-1.png" width="672" /></p>
+<p>“Clearly our novel approach has improved the expected response…”, the presenter says, everyone nodding in amazement.</p>
+<p>You look at the plot again and scratch your head, a bit annoyed perhaps since the rest of the audience already sees it, but to you it’s more challenging to interpret the differences between treatments. In fact, you can’t really tell which lines belong to which treatment. Is Treatment A the line above or below Treatment B? Why can’t you readily tell the difference?</p>
+<div id="color-blindness" class="section level2">
+<h2>Color Blindness</h2>
+<p>Perhaps more appropriately referred to as color vision deficiency, color blindness is a condition in which certain light receptors in the eye are either deficient or absent. A deficiency in seeing reds or greens properly (red-green color blindness) affects about 8% of the male population with Northern European ancestry. <a href="https://nei.nih.gov/health/color_blindness/facts_about">The different forms can be learned</a> about with a simple web search.</p>
+<p>The colors of the data points in the plot shown above I intentionally altered to mimic red-green color blindness (see below). So, if you couldn’t see the difference between Treatment A and Treament B in those data points, it’s because you were viewing the plot as one would that has red-green color blindness. Unless you’re already red-green color blind, in which case I hope you support my efforts to enlighten these “full-spectrum” people.</p>
+</div>
+<div id="dichromat" class="section level2">
+<h2>Dichromat</h2>
+<p><a href="https://cran.r-project.org/web/packages/dichromat/index.html">Dichromat</a> is a package for R. To use it, create your plot with a color palette of your choice. Applying dichromat will alter the color palette, simulating one of the prominent color vision deficiencies. If the plot still looks good after using dichromat, then you can be more confident that the original color plot will be seen as intended by all audience members, and not just 92% of them.</p>
+<p>Below is the original plot.</p>
+<p><img src="/post/plotting-for-the-colorblind_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>Next is sample code I used to create the plot at the top of the page, which simulated red-green color blindness, or deuteranopia.</p>
+<pre><code>library(dichromat)
+
+data &lt;- read_csv(&#39;data.csv&#39;)
+
+pal &lt;- c(&quot;#32A70A&quot;, &quot;#E92A2A&quot;)
+
+pal_cb &lt;- dichromat(pal, type = c(&quot;deutan&quot;))
+
+ggplot(data = data,
+       aes(x = Predictor,
+           y = Response,
+           color = Treatment)) +
+  geom_smooth(method = &quot;lm&quot;,
+              formula = y ~ poly(x, 2),
+              se = FALSE) +
+  geom_point() +
+  scale_color_manual(values = pal_cb) +
+  labs(...)</code></pre>
+</div>
+<div id="other-simulators" class="section level2">
+<h2>Other Simulators</h2>
+<p>There are other says to simulate color blindness in R and on the web. <a href="https://cran.r-project.org/web/packages/colorBlindness/vignettes/colorBlindness.html"><code>colorBlindness</code></a> is another useful R package that helps check a figure for accessibility, including a grayscale check<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>. A quick web search will turn up various browser extensions like <a href="https://chrome.google.com/webstore/detail/nocoffee/jjeeggmbnhckmgdhmgdckeigabjfbddl">NoCoffee</a>. Once installed, simply navigate to a webpage or web image that you would like to see as one with color blindness would, and turn on one of the color deficiency options such as “Deuteranopia”. The images below are an example of using the extension. If you have normal vision, notice how the numbers in the red-green swatches disappear under the “Deuteranopia” setting.</p>
+<div id="original" class="section level3">
+<h3>Original</h3>
+<p><img src="/nocoffee1.jpg" /></p>
+</div>
+<div id="nocoffee" class="section level3">
+<h3>NoCoffee</h3>
+<p><img src="/nocoffee2.jpg" /></p>
+<p>Interestingly, a person I shared this with (who is red-green color blind) said they could actually see some of the numbers in the image on the right. This supports the fact that those with color vision deficiencies can detect contrast or color brightness pretty well.</p>
+</div>
+</div>
+<div id="solutions" class="section level1">
+<h1>Solutions</h1>
+<p>When preparing visualizations of data, consider the following:</p>
+<ul>
+<li><p>Increase contrast between colors. For example, bright green and dark red are more easily distinguished than a medium green and medium red.</p></li>
+<li><p>Use white background to increase contrast between points (be deliberate in using the default gray background in <a href="https://ggplot2.tidyverse.org/reference/">ggplot2</a>)</p></li>
+<li><p>Avoid using green and red in the same plot</p></li>
+<li><p>Consider using shapes instead of color</p></li>
+<li><p>Plot with <em>both</em> color and shape (see below)</p></li>
+<li><p>Choose color palettes that are colorblind friendly</p>
+<ul>
+<li><a href="https://adventuresinmapping.files.wordpress.com/2016/12/droughtinsoutheastusa.jpg">this map</a> by John Nelson is a good example</li>
+<li><a href="https://projects.susielu.com/viz-palette">VizPalette</a> by Elijah Meeks and Susie Lu</li>
+<li><a href="https://carto.com/carto-colors/">Carto</a></li>
+<li><a href="http://tristen.ca/hcl-picker">Colorpicker</a> by Tristen Brown</li>
+<li><a href="https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html">Viridis</a></li>
+</ul></li>
+<li><p>Separate data into small multiples, like <a href="https://adventuresinmapping.files.wordpress.com/2017/01/fastfoodfrequency.jpg">these maps</a> also by John Nelson</p></li>
+<li><p>And…keep searching around. Others have found good color combinations and so forth.</p>
+<ul>
+<li>For example, some researchers developed <a href="http://matplotlib.org/cmocean/">color maps for oceanography</a> but with the goal that the range of colors would be perceptually uniform and based strongly on lightness. As a result, the color maps are beautiful and relatively friendly to the color blind, an audience these researchers deliberately considered.</li>
+</ul></li>
+</ul>
+<p>The following is a simple modification of the original plot, which involves shapes and limits the palette to changes in brightness rather than colors.</p>
+<p><img src="/post/plotting-for-the-colorblind_files/figure-html/plot-gray-1.png" width="672" /></p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>An important consideration when someone may print up your figure on a black and white printer.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>

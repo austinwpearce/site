@@ -1,6 +1,16 @@
-require('tidyverse')
+library(tidyverse)
 
-# Import data with pH as 'ph' in first column, the anion as 'anion' in second column, and cation as 'cation' in third and last column
+# more visually appealing plots
+theme_set(
+  hrbrthemes::theme_ipsum_rc(
+    axis_title_just = "br",
+    axis_title_size = 14,
+    plot_margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "mm"),
+    grid_col = "#F1F1F1"
+  )
+)
+
+# Import data with pH as "ph" in first column, the anion as "anion" in second column, and cation as "cation" in third and last column
 
 # Manual Method ---------------------------------------------------------------
 # start by typing in all values, in order obviously
@@ -22,18 +32,18 @@ ph.last <- tail(ph, n = 1)
 net <- anion - cation
 
 # stitch it all together in a data frame --------------------------------------
-df.pzc <- data_frame(ph, anion, cation, net) %>% 
+df.pzc <- tibble(ph, anion, cation, net) %>% 
   arrange(., desc(net))
 
 # long form of the data frame
-df.pzc2 <- data_frame(ph, anion, -cation, net) %>% 
+df.pzc2 <- tibble(ph, anion, -cation, net) %>% 
   arrange(desc(net)) %>% 
   gather(key = "measure",
          value = "value",
          2:4)
 
 df.pzc2$measure2 <- factor(df.pzc2$measure,
-                  levels = c('anion', 'net', '-cation'))
+                  levels = c("anion", "net", "-cation"))
 
 # Find PZC --------------------------------------------------------------------
 # find pzc by calculating slope of line between last positive (AEC) point
@@ -66,22 +76,22 @@ ggplot(data = df.pzc2,
              alpha = 0.4) +
   # PZC point
   geom_point(aes(x = pzc, y = 0),
-             color = 'red',
+             color = "red",
              size = 3,
              pch = 18) +
   # annotations for labels
-  annotate(geom = 'text',
+  annotate(geom = "text",
            label = pzc.label,
            x = pzc + 0.1, y = 0.3,
-           family = 'serif') +
-  annotate(geom = 'text',
+           family = "Roboto Condensed") +
+  annotate(geom = "text",
            label = "AEC",
            x = ph[[2]], y = 0.2,
-           family = 'serif') +
-  annotate(geom = 'text',
+           family = "Roboto Condensed") +
+  annotate(geom = "text",
            label = "CEC",
            x = ph[[2]], y = -0.2,
-           family = 'serif') +
+           family = "Roboto Condensed") +
   scale_x_continuous(breaks = seq(from = ph.first,
                                   to = ph.last,
                                   by = (ph.last - ph.first))) +
@@ -90,10 +100,6 @@ ggplot(data = df.pzc2,
   labs(title = "Point of Zero Charge",
        x = "pH",
        y = "Net Charge",
-       linetype = NULL) +
-  theme_classic(base_family = 'serif', base_size = 14)
+       linetype = NULL)
 
-ggsave(filename = "pzc.png",
-       dpi = 1200,
-       height = 5,
-       width = 7)
+# ggsave(filename = "pzc.png", dpi = 300, height = 5, width = 7)

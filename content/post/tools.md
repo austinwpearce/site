@@ -1,47 +1,45 @@
 ---
-author: Austin
-lastmod: "2021-12-20"
+title: Tools
+lastmod: "2021-01-29"
 description: A master list of resources and tools that have helped me work.
 tags:
 - tools
 - software
 - websites
-title: Tools
 ---
 
 A master list of resources and tools that have helped me work or that I find useful or neat. Installation files are for Windows versions of open-source software mentioned below, but follow the link to the website for Linux or Mac versions.
 
 # Agriculture & Environment
 
-+ [Ag Data Commons by USDA](https://data.nal.usda.gov/search/type/dataset)
-+ [Ag Risk & Farm Management Library](https://agrisk.umn.edu) - provides budgets and library resources for farm management.
-+ [Dairy One](https://dairyone.com/services/forage-laboratory-services/feed-composition-library/interactive-feed-composition-libraries/) - dairy feed composition library.
-+ [Gridded National Soil Survey Geographic Database](https://www.nrcs.usda.gov/wps/portal/nrcs/detail/soils/survey/geo/?cid=nrcseprd1464625) - NRCS soil data for US in raster format.
-+ [Integrated Farm System Model](https://www.ars.usda.gov/northeast-area/up-pa/pswmru/docs/integrated-farm-system-model/) - helps model impacts on nutrient cycling and net returns to integrated systems like dairy and beef farming.
-+ [SoilGrids](https://www.soilgrids.org/) - providing free access to soil data across borders
-+ [Statistics for Soil Survery](http://ncss-tech.github.io/stats_for_soil_survey/chapters/) - course on soil stats
-+ [SWAT+](https://swat.tamu.edu/software/plus/) - Soil and Water Assessment Tool for modeling process in watersheds.
-+ [Web Soil Survey](https://websoilsurvey.nrcs.usda.gov/app/WebSoilSurvey.aspx) - online portal for getting soil data in US.
++ [Ag Data Commons by USDA](https://data.nal.usda.gov/) - data catalog and repository available to help the agricultural research community
++ [Ag Risk & Farm Management Library](https://agrisk.umn.edu) - library that includes budgets and other resources for farm management
++ [Dairy One](https://dairyone.com/services/forage-laboratory-services/feed-composition-library/interactive-feed-composition-libraries/) - dairy feed composition library
++ [Gridded National Soil Survey Geographic Database](https://www.nrcs.usda.gov/wps/portal/nrcs/detail/soils/survey/geo/?cid=nrcseprd1464625) - soil data for US in raster format
++ [Integrated Farm System Model](https://www.ars.usda.gov/northeast-area/up-pa/pswmru/docs/integrated-farm-system-model/) - helps model impacts on nutrient cycling and net returns to integrated systems like dairy and beef farming
++ [SoilGrids](https://www.soilgrids.org/) - soil data across borders
++ [Statistics for Soil Survey](http://ncss-tech.github.io/stats_for_soil_survey/chapters/) - course on soil stats
++ [SWAT+](https://swat.tamu.edu/software/plus/) - Soil and Water Assessment Tool for modeling process in watersheds
++ [Web Soil Survey](https://websoilsurvey.nrcs.usda.gov/app/WebSoilSurvey.aspx) - online portal for getting soil data in US
 
-# Data art/visualization
+# Data visualization
 
 These resources and people show how data becomes useful information, and how to do it beautifully.
 
-+ [Alberto Cairo](http://www.thefunctionalart.com/) - Alberto Cairo's blog about information design and visualization. His work sort of reminds me of Edward Tufte in a way.
-+ [Andy Kirk](https://www.visualisingdata.com/resources/) - Andy Kirk has a blog but also put together a more substantial list of data 'viz' resources than I have provided here.
-+ [cmocean](https://cran.r-project.org/web/packages/cmocean/vignettes/cmocean.html) - color palettes for oceanography, or possibly water quality.
-+ [BusinessPundit's Guide to Infographics](https://www.businesspundit.com/guide-to-infographics/#) - guidance related to the unique realm of infographic design, complete with an additional list of other useful resources on such design. Suggested by a special STEMette.
-+ [Data Driven Documents (D3)](https://d3js.org/) - The D3 Javascript library is widely used for web-based data viz.
++ [Alberto Cairo](http://www.thefunctionalart.com/) - Alberto Cairo's blog about information design and visualization. His work sort of reminds me of Edward Tufte in a way
++ [Andy Kirk's Master List](https://www.visualisingdata.com/resources/) - Andy Kirk has a blog but also put together a more substantial list of data 'viz' resources than I have provided here
++ [cmocean](https://cran.r-project.org/web/packages/cmocean/vignettes/cmocean.html) - color palettes for oceanography, or possibly water quality
++ [Data Driven Documents (D3)](https://d3js.org/) - The D3 Javascript library is widely used for web-based data viz
 + [Dataviz Project](https://datavizproject.com/) - a guide of data visualization
-+ [Data to Viz](https://www.data-to-viz.com/caveats.html) - a guide of data visualization caveats.
-+ [Datawrapper](https://www.datawrapper.de/) - create solid and clean data visualizations in minutes.
++ [Data to Viz](https://www.data-to-viz.com/caveats.html) - a guide of data visualization caveats
++ [Datawrapper](https://www.datawrapper.de/) - create solid and clean data visualizations in minutes
 + [Draw My Data](https://www.datawrapper.de/) - make a scatter plot by clicking
-+ [Edward Tuft](https://www.edwardtufte.com/tufte/) - someone who I think has good philosophies for data visualization.
-+ [FlowingData](https://flowingdata.com/) - data visualization and paid tutorials by Nathan Yau.
-+ [Flourish](https://flourish.studio/) - turn your data into stunning charts, maps and interactive stories. I have not used this yet.
-+ [Giorgia Lupi](http://giorgialupi.com/) - info designer that has an exceptional talent with hand-drawn visualizations. Who said data viz had to be digital? See also [Dear Data](http://www.dear-data.com/all).
++ [Edward Tuft](https://www.edwardtufte.com/tufte/) - someone who I think has good philosophies for data visualization
++ [FlowingData](https://flowingdata.com/) - data visualization and paid tutorials by Nathan Yau
++ [Flourish](https://flourish.studio/) - I have not used this yet, but it is suppose to turn your data into stunning charts, maps and interactive stories
++ [Giorgia Lupi](http://giorgialupi.com/) - info designer that has an exceptional talent with hand-drawn visualizations. Who said data viz had to be digital? See also [Dear Data](http://www.dear-data.com/all)
 + [Happy Hues](https://www.happyhues.co/) - trendy, modern color palettes
-+ [Jonathan Corum](http://style.org/) - someone for data visualization inspiration.
++ [Jonathan Corum](http://style.org/) - someone for data visualization inspiration
 + [Matplotlib](https://matplotlib.org/) - Python 2D plotting library which produces publication quality figures.
 + [Nadieh Bremer](https://www.visualcinnamon.com/) - beautiful web-based, interactive visualizations.
 + [Our World in Data](https://ourworldindata.org/) - research and data to make progress against the world's largest problems.
@@ -51,7 +49,7 @@ These resources and people show how data becomes useful information, and how to 
 + [Polygraph](http://poly-graph.co/) - an incubator for visually driven storytelling.
 + [RAW](http://app.rawgraphs.io/) - the missing link between spreadsheets and data visualization
 + [Tableau](https://www.tableau.com/) - interactive data visualization with public [(install)](https://public.tableau.com/s/download/public/pc64) and paid versions. FREE for students
-+ [Viz Palette](https://projects.susielu.com/viz-palette) - Another visualization palette picker, that like the others includes many [colorblind friendly](https://gradcylinder.org/post/plotting-for-the-color-blind/) options.
++ [Viz Palette](https://projects.susielu.com/viz-palette) - Another visualization palette picker, that like the others includes many [colorblind friendly](https://gradcylinder.org/plotting-for-the-color-blind/) options.
 + [Werner's Colors](https://www.c82.net/werner/#colors) - gorgeous presentation of colors from a time in which colors were more deeply connected to nature because people were more deeply connected to nature
 
 ### Data Art subset: Spatial data visualization

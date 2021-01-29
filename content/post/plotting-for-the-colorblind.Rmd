@@ -1,9 +1,15 @@
 ---
 title: "Plotting for the Color Blind"
-date: '2019-10-24'
+lastmod: '2019-10-24'
 slug: plotting-for-the-color-blind
-summary: Green isn't always as red as it seems.
-tags: [Accessibility, Communication, Visualization, R]
+description: Green isn't always as red as it seems.
+tags:
+- accessibility
+- communication
+- visualization
+- R
+editor_options:
+  chunk_output_type: console
 ---
 
 The following example is intended to help people with normal color vision experience a little bit of what it is like to be color blind.
@@ -13,40 +19,42 @@ Imagine sitting in the audience at a scientific presentation, and the presenter 
 ```{r import, include=FALSE}
 library(tidyverse)
 library(dichromat)
+library(extrafont)
+library(colorBlindness)
 
-cb <- read_csv('data/colorblind.csv') %>% 
-  gather(.,
-         2:4,
-         key = 'Treatment',
-         value = 'Response')
+# more visually appealing plots
+theme_set(
+  hrbrthemes::theme_ipsum_rc(
+    axis_title_just = "br",
+    axis_title_size = 14,
+    plot_margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "mm"),
+    grid_col = "#F1F1F1"))
 
-pal <- c("#32A70A", "#A400B7", "#E92A2A")
 
-pal.cb <- dichromat(pal, type = c("deutan"))
+cb <- read_csv("data/colorblind.csv")
 
-plt <- ggplot(data = cb,
-              aes(x = X,
-                  y = Response,
-                  group = Treatment,
-                  color = Treatment)) +
-  geom_line() +
+pal <- c("#32A70A", "#E92A2A")
+
+pal_cb <- dichromat(pal, type = c("deutan"))
+
+plot <- ggplot(data = cb,
+               aes(x = Predictor,
+                   y = Response,
+                   color = Treatment)) +
+  geom_smooth(method = "lm",
+              formula = y ~ poly(x, 2),
+              se = FALSE) +
   geom_point() +
-  theme_classic() +
-  theme(axis.title = element_text(size = 12),
-        axis.text = element_text(size = 12),
-        title = element_text(size = 14),
-        aspect.ratio = 0.618) +
   labs(title = "Results that have changed science as we know it.",
        x = "Important Predictor",
        y = "Important Response")
 
-plt.cb <- plt + scale_color_manual(values = pal.cb)
+plot_cb <- plot + scale_color_manual(values = pal_cb)
 ```
 
 ```{r plot-cb,echo=FALSE}
-plt.cb
+plot_cb
 ```
-
 
 "Clearly our novel approach has improved the expected response...", the presenter says, everyone nodding in amazement.
 
@@ -54,7 +62,7 @@ You look at the plot again and scratch your head, a bit annoyed perhaps since th
 
 ## Color Blindness
 
-Perhaps more appropriately referred to as color vision deficiency, color blindness is a condition in which certain light receptors in the eye are either deficient or absent. A deficiency in seeing reds or greens properly (red-green color blindness) affects about 8% of the male population with Northern European ancestry. [The different forms can be learned](https://nei.nih.gov/health/color_blindness/facts_about) about with a simple Google search.
+Perhaps more appropriately referred to as color vision deficiency, color blindness is a condition in which certain light receptors in the eye are either deficient or absent. A deficiency in seeing reds or greens properly (red-green color blindness) affects about 8% of the male population with Northern European ancestry. [The different forms can be learned](https://nei.nih.gov/health/color_blindness/facts_about) about with a simple web search.
 
 The colors of the data points in the plot shown above I intentionally altered to mimic red-green color blindness (see below). So, if you couldn't see the difference between Treatment A and Treament B in those data points, it's because you were viewing the plot as one would that has red-green color blindness. Unless you're already red-green color blind, in which case I hope you support my efforts to enlighten these "full-spectrum" people.
 
@@ -65,43 +73,43 @@ The colors of the data points in the plot shown above I intentionally altered to
 Below is the original plot.
 
 ```{r, echo=FALSE}
-plt.org <- plt + scale_color_manual(values = pal)
-plt.org
+plot + scale_color_manual(values = pal)
 ```
 
 Next is sample code I used to create the plot at the top of the page, which simulated red-green color blindness, or deuteranopia.
 
-```
-library(dichromat)
+    library(dichromat)
 
-data <- read_csv('data.csv')
+    data <- read_csv('data.csv')
 
-pal <- c("#32A70A", "#A400B7", "#E92A2A")
+    pal <- c("#32A70A", "#E92A2A")
 
-pal.cb <- dichromat(pal, type = c("deutan"))
+    pal_cb <- dichromat(pal, type = c("deutan"))
 
-plt <- ggplot(data = data,
-              aes(x = X,
-                  y = Response,
-                  group = Treatment,
-                  color = Treatment)) +
-  geom_line() +
-  geom_point() +
-  theme_classic() +
-  labs(...)
-```
+    ggplot(data = data,
+           aes(x = Predictor,
+               y = Response,
+               color = Treatment)) +
+      geom_smooth(method = "lm",
+                  formula = y ~ poly(x, 2),
+                  se = FALSE) +
+      geom_point() +
+      scale_color_manual(values = pal_cb) +
+      labs(...)
 
-## NoCoffee
+## Other Simulators
 
-[NoCoffee](https://accessgarage.wordpress.com/2013/02/09/458/) is an [extension](https://chrome.google.com/webstore/detail/nocoffee/jjeeggmbnhckmgdhmgdckeigabjfbddl) for Chrome web browser. Once installed, simply navigate to a webpage or web image that you would like to see as one with color blindness would, and turn on one of the color deficiency options such as "Deuteranopia". Turn off again when ready to continue web browsing. The images below are an example of using the extension. If you have normal vision, notice how the numbers in the red-green swatches disappear under the "Deuteranopia" setting.
+There are other says to simulate color blindness in R and on the web. [`colorBlindness`](https://cran.r-project.org/web/packages/colorBlindness/vignettes/colorBlindness.html) is another useful R package that helps check a figure for accessibility, including a grayscale check[^1]. A quick web search will turn up various browser extensions like [NoCoffee](https://chrome.google.com/webstore/detail/nocoffee/jjeeggmbnhckmgdhmgdckeigabjfbddl). Once installed, simply navigate to a webpage or web image that you would like to see as one with color blindness would, and turn on one of the color deficiency options such as "Deuteranopia". The images below are an example of using the extension. If you have normal vision, notice how the numbers in the red-green swatches disappear under the "Deuteranopia" setting.
+
+[^1]: An important consideration when someone may print up your figure on a black and white printer.
 
 ### Original
 
-![](/img/nocoffee1.jpg)
+![](/nocoffee1.jpg)
 
 ### NoCoffee
 
-![](/img/nocoffee2.jpg)
+![](/nocoffee2.jpg)
 
 Interestingly, a person I shared this with (who is red-green color blind) said they could actually see some of the numbers in the image on the right. This supports the fact that those with color vision deficiencies can detect contrast or color brightness pretty well.
 
@@ -109,40 +117,47 @@ Interestingly, a person I shared this with (who is red-green color blind) said t
 
 When preparing visualizations of data, consider the following:
 
-* Increase contrast between colors.  For example, bright green and dark red are more easily distinguished than a medium green and medium red.
-* Use white background to increase contrast between points (be deliberate in using the default gray background in [ggplot2](https://ggplot2.tidyverse.org/reference/)).
-* Avoid using green and red in the same plot.
-* Plot without color by using shapes instead. 
-* Plot with both color and shape (see below).
-* Choose color palettes that are colorblind friendly
-  - [this map](https://adventuresinmapping.files.wordpress.com/2016/12/droughtinsoutheastusa.jpg) by John Nelson is a good example
-  - [VizPalette](https://projects.susielu.com/viz-palette) by Elijah Meeks and Susie Lu
-  - [Carto](https://carto.com/carto-colors/)
-  - [Colorpicker](http://tristen.ca/hcl-picker) by Tristen Brown
-  - [Viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html)
-* Separate data into small multiples, like [these maps](https://adventuresinmapping.files.wordpress.com/2017/01/fastfoodfrequency.jpg) also by John Nelson
-* And...keep searching around. Others have found good color combinations and so forth.
-    - For example, some researchers developed [color maps for oceanography](http://matplotlib.org/cmocean/) but with the goal that the range of colors would be perceptually uniform and based strongly on lightness. As a result, the color maps are beautiful and relatively friendly to the color blind, an audience these researchers deliberately considered.
+-   Increase contrast between colors. For example, bright green and dark red are more easily distinguished than a medium green and medium red.
+
+-   Use white background to increase contrast between points (be deliberate in using the default gray background in [ggplot2](https://ggplot2.tidyverse.org/reference/))
+
+-   Avoid using green and red in the same plot
+
+-   Consider using shapes instead of color
+
+-   Plot with *both* color and shape (see below)
+
+-   Choose color palettes that are colorblind friendly
+
+    -   [this map](https://adventuresinmapping.files.wordpress.com/2016/12/droughtinsoutheastusa.jpg) by John Nelson is a good example
+    -   [VizPalette](https://projects.susielu.com/viz-palette) by Elijah Meeks and Susie Lu
+    -   [Carto](https://carto.com/carto-colors/)
+    -   [Colorpicker](http://tristen.ca/hcl-picker) by Tristen Brown
+    -   [Viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html)
+
+-   Separate data into small multiples, like [these maps](https://adventuresinmapping.files.wordpress.com/2017/01/fastfoodfrequency.jpg) also by John Nelson
+
+-   And...keep searching around. Others have found good color combinations and so forth.
+
+    -   For example, some researchers developed [color maps for oceanography](http://matplotlib.org/cmocean/) but with the goal that the range of colors would be perceptually uniform and based strongly on lightness. As a result, the color maps are beautiful and relatively friendly to the color blind, an audience these researchers deliberately considered.
 
 The following is a simple modification of the original plot, which involves shapes and limits the palette to changes in brightness rather than colors.
 
 ```{r plot-gray, echo=FALSE}
 ggplot(data = cb,
-       aes(x = X,
+       aes(x = Predictor,
        y = Response,
-       group = Treatment,
        color = Treatment,
        shape = Treatment,
+       size = Treatment,
        linetype = Treatment)) +
-  geom_line(size = 1) +
-  geom_point(size = 2) +
-  scale_color_grey(start = 0,
-                   end = 0.6) +
-  theme_classic() +
-  theme(axis.title = element_text(size = 12),
-        axis.text = element_text(size = 12),
-        title = element_text(size = 14),
-        aspect.ratio = 0.618) +
+  geom_smooth(method = "lm",
+              formula = y ~ poly(x, 2),
+              se = FALSE,
+              size = 0.5) +
+  geom_point() +
+  scale_size_manual(values = c(1, 2))+
+  scale_color_manual(values = c("#CC0000", "#002255")) +
   labs(title = "Results that have changed science as we know it.",
        x = "Important Predictor",
        y = "Important Response")
