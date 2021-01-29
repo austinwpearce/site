@@ -12,9 +12,9 @@ editor_options:
   chunk_output_type: console
 ---
 
-The following example is intended to help people with normal color vision experience a little bit of what it is like to be color blind.
+The following example is intended to help people with normal color vision experience a little bit of what it is like to be color blind. Imagine sitting in the audience at a scientific presentation, and the presenter puts up the following key result.
 
-Imagine sitting in the audience at a scientific presentation, and the presenter puts up the following key result.
+\ 
 
 ```{r import, include=FALSE}
 library(tidyverse)
@@ -64,13 +64,15 @@ You look at the plot again and scratch your head, a bit annoyed perhaps since th
 
 Perhaps more appropriately referred to as color vision deficiency, color blindness is a condition in which certain light receptors in the eye are either deficient or absent. A deficiency in seeing reds or greens properly (red-green color blindness) affects about 8% of the male population with Northern European ancestry. [The different forms can be learned](https://nei.nih.gov/health/color_blindness/facts_about) about with a simple web search.
 
-The colors of the data points in the plot shown above I intentionally altered to mimic red-green color blindness (see below). So, if you couldn't see the difference between Treatment A and Treament B in those data points, it's because you were viewing the plot as one would that has red-green color blindness. Unless you're already red-green color blind, in which case I hope you support my efforts to enlighten these "full-spectrum" people.
+The colors of the data points in the plot shown above I intentionally altered to mimic red-green color blindness (see below). So, if you couldn't see the difference between Treatment A and Treatment B in those data points, it's because you were viewing the plot as one would that has red-green color blindness. Unless you're already red-green color blind, in which case I hope you support my efforts to enlighten these "full-spectrum" people.
 
 ## Dichromat
 
 [Dichromat](https://cran.r-project.org/web/packages/dichromat/index.html) is a package for R. To use it, create your plot with a color palette of your choice. Applying dichromat will alter the color palette, simulating one of the prominent color vision deficiencies. If the plot still looks good after using dichromat, then you can be more confident that the original color plot will be seen as intended by all audience members, and not just 92% of them.
 
 Below is the original plot.
+
+\ 
 
 ```{r, echo=FALSE}
 plot + scale_color_manual(values = pal)
@@ -142,6 +144,8 @@ When preparing visualizations of data, consider the following:
     -   For example, some researchers developed [color maps for oceanography](http://matplotlib.org/cmocean/) but with the goal that the range of colors would be perceptually uniform and based strongly on lightness. As a result, the color maps are beautiful and relatively friendly to the color blind, an audience these researchers deliberately considered.
 
 The following is a simple modification of the original plot, which involves shapes and limits the palette to changes in brightness rather than colors.
+
+\ 
 
 ```{r plot-gray, echo=FALSE}
 ggplot(data = cb,

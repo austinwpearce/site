@@ -1,6 +1,6 @@
 ---
 title: "Finding the Point of Zero Charge in R"
-date: '2018-04-07'
+lastmod: "2021-01-29"
 slug: point-zero-charge
 description: "What is the point of this anyways?"
 tags:
@@ -16,8 +16,10 @@ If you have your own data, import the data frame into *R* having set the variabl
 Or if you want to use the R code only, just input your PZC data manually into the respective strings (ph, anion, and cation). Make sure to fill out the strings in order of the observations, starting with the first PZC measurement. For this all to work, I might add, your cation exchange values should be positive when recorded, though it'll be treated as negative later during the calculation.
 
 ```{r setup, include=FALSE}
-# you'll need this package
+# you'll need packages as usual
 library(tidyverse)
+library(extrafont)
+library(hrbrthemes)
 
 # more visually appealing plots
 theme_set(
@@ -127,7 +129,8 @@ ggplot(data = df_pzc2,
   labs(title = "Point of Zero Charge",
        x = "pH",
        y = "Net Charge",
-       linetype = NULL)
+       linetype = NULL,
+       caption = "source: gradcylinder")
 ```
 
 To make your life easier, below is a link to the *R* code so that you do not have to copy and paste code chunks from this page.

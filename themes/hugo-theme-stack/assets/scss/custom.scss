@@ -2,23 +2,32 @@
 
   
 body {
+  font-family: "Roboto", sans-serif;
   text-align: justify;
   max-width: 1000px;
   margin: auto;
 }
 
 h1 {
+  font-family: "Roboto", sans-serif
   text-align: left;
   font-weight: 900;
 }
 
 h2 {
+  font-family: "Roboto", sans-serif
   text-align: left;
   font-weight: 700;
 }
   
 h3 {
+  font-family: "Roboto", sans-serif
   text-align: left;
   font-weight: 500;
   font-style: italic;
+}
+
+code {
+  font-family: "Fira Code", monospace;
+  font-size: 85%;
 }

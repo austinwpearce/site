@@ -24,7 +24,19 @@ R is the statistics and programming language mentioned just above. But rather th
 
 ```{r, include=FALSE}
 library(tidyverse)
+library(hrbrthemes)
+library(extrafont)
 library(ggpmisc)
+
+# more visually appealing plots
+theme_set(
+  hrbrthemes::theme_ipsum_rc(
+    axis_title_just = "br",
+    axis_title_size = 14,
+    plot_margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "mm"),
+    grid_col = "#F1F1F1"
+    )
+  )
 
 soil <- read_csv("data/soil-p.csv")
 
@@ -50,15 +62,15 @@ soil %>%
     y = 150,
     label = paste("R^2 == ", round(summary(lm)$r.squared,
                                    digits = 2)),
-    parse = TRUE
+    parse = TRUE,
+    family = "Roboto Condensed"
   ) +
   labs(
     x = "Olsen (ppm)",
     y = "Mehlich III (ppm)",
     title = "Correlation of Olsen and Mehlich III soil phosphorus extractions",
     caption = "source: gradcylinder"
-  ) +
-  theme_bw()
+  )
 ```
 
 
@@ -74,7 +86,7 @@ I love using Google products for one main reason: I can access the data confiden
 
 Is there much for me to explain here? You know what Excel is, right? When creating graphs in Excel, I do like being able to quickly change the overall appearance of the graph by selecting different templates provided by Microsoft. With that said, not all the templates are visually appealing. Some of the automatically assigned colors are kind of bland. And exporting graphs? Can only really be done if one is copying and pasting into Powerpoint or Word.
 
-![](/img/visdata-01.png)
+![](/visdata_01.png)
 
 ## Datawrapper
 
@@ -85,12 +97,6 @@ Is there much for me to explain here? You know what Excel is, right? When creati
 ## Tableau
 
 Tableau offers data visualization and analysis software, including [Tableau Public](https://public.tableau.com/en-us/s/download/thanks), a free program and platform that streamlines visualization and online publishing. The visualizations are far more comprehensive than Sheets or Excel, giving the user the ability to create dashboards or stories out of multiple graphs. Here is [an example](https://public.tableau.com/profile/privatestorm#!/vizhome/1850AgriculturalProductioninPennsylvania/Dashboard) of a dashboard that recently won a student contest. As for me, I haven't used this software much, but I was impressed by how quickly I could make a simple map.
-
-## Plotly
-
-[Plotly's Chart Studio](https://chart-studio.plot.ly) has some nice functionality and multiple chart options freely available to users. Last I really tried it, Plotly transitioned to a newer 2.0 platform, which in some ways was more user friendly and intuitive than version 1.0. Plotly 2 limited some features to free-account users like myself; some limitations are quite annoying, like the inability to change the color of the chart background without subscribing to a paid account. Or the chart font color. Or the chart font. Seriously?  With that said, the charts can export in multiple formats and can be embedded into a website (see below), updating if you revise the graph or data later.
-
-Last I used Plotly, they offered a hefty discount to students looking for a personal subscription (\$99/year instead of \$420/year, but that student rate is up from \$59 previously). Prices and company goals have changed since then, and are not readily seen on the site. Plotly orgnanized Plotcon, last held in 2017, which does not seem to have continued.  There is an R package for plotly which worked with ggplot2, even. And Plotly has a [YouTube channel](https://www.youtube.com/user/plotlygraph) (with Dash stuff and old Plotcon). Having just checked in with Plotly again recently, it seems that Plotly seems spread thin and distracted.
 
 ## RAW
 
@@ -110,4 +116,4 @@ And if one needs a quick chart to demonstrate something (e.g. correlation, basic
 
 [ChartAccent](https://chartaccent.github.io) is a really useful tool for creating basic graphs that need annotation. Sometimes, graphs speak for themselves, but often you'll need to draw the eyes of viewers to a certain data point, certain trend or pattern, or at least acknowledge the data source if not your own.
 
-![](/img/visdata-02.png)
+![](/visdata_02.png)

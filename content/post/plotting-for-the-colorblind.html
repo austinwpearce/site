@@ -15,20 +15,21 @@ editor_options:
 <script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
 
 
-<p>The following example is intended to help people with normal color vision experience a little bit of what it is like to be color blind.</p>
-<p>Imagine sitting in the audience at a scientific presentation, and the presenter puts up the following key result.</p>
+<p>The following example is intended to help people with normal color vision experience a little bit of what it is like to be color blind. Imagine sitting in the audience at a scientific presentation, and the presenter puts up the following key result.</p>
+<p> </p>
 <p><img src="/post/plotting-for-the-colorblind_files/figure-html/plot-cb-1.png" width="672" /></p>
 <p>“Clearly our novel approach has improved the expected response…”, the presenter says, everyone nodding in amazement.</p>
 <p>You look at the plot again and scratch your head, a bit annoyed perhaps since the rest of the audience already sees it, but to you it’s more challenging to interpret the differences between treatments. In fact, you can’t really tell which lines belong to which treatment. Is Treatment A the line above or below Treatment B? Why can’t you readily tell the difference?</p>
 <div id="color-blindness" class="section level2">
 <h2>Color Blindness</h2>
 <p>Perhaps more appropriately referred to as color vision deficiency, color blindness is a condition in which certain light receptors in the eye are either deficient or absent. A deficiency in seeing reds or greens properly (red-green color blindness) affects about 8% of the male population with Northern European ancestry. <a href="https://nei.nih.gov/health/color_blindness/facts_about">The different forms can be learned</a> about with a simple web search.</p>
-<p>The colors of the data points in the plot shown above I intentionally altered to mimic red-green color blindness (see below). So, if you couldn’t see the difference between Treatment A and Treament B in those data points, it’s because you were viewing the plot as one would that has red-green color blindness. Unless you’re already red-green color blind, in which case I hope you support my efforts to enlighten these “full-spectrum” people.</p>
+<p>The colors of the data points in the plot shown above I intentionally altered to mimic red-green color blindness (see below). So, if you couldn’t see the difference between Treatment A and Treatment B in those data points, it’s because you were viewing the plot as one would that has red-green color blindness. Unless you’re already red-green color blind, in which case I hope you support my efforts to enlighten these “full-spectrum” people.</p>
 </div>
 <div id="dichromat" class="section level2">
 <h2>Dichromat</h2>
 <p><a href="https://cran.r-project.org/web/packages/dichromat/index.html">Dichromat</a> is a package for R. To use it, create your plot with a color palette of your choice. Applying dichromat will alter the color palette, simulating one of the prominent color vision deficiencies. If the plot still looks good after using dichromat, then you can be more confident that the original color plot will be seen as intended by all audience members, and not just 92% of them.</p>
 <p>Below is the original plot.</p>
+<p> </p>
 <p><img src="/post/plotting-for-the-colorblind_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
 <p>Next is sample code I used to create the plot at the top of the page, which simulated red-green color blindness, or deuteranopia.</p>
 <pre><code>library(dichromat)
@@ -87,6 +88,7 @@ ggplot(data = data,
 </ul></li>
 </ul>
 <p>The following is a simple modification of the original plot, which involves shapes and limits the palette to changes in brightness rather than colors.</p>
+<p> </p>
 <p><img src="/post/plotting-for-the-colorblind_files/figure-html/plot-gray-1.png" width="672" /></p>
 </div>
 <div class="footnotes">
