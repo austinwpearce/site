@@ -6,6 +6,11 @@ title: The Graduated Cylinder
 
 ignoreFiles: ["\\.Rmd$", "\\.Rmarkdown$", "_cache$", "\\.knit\\.md$", "\\.utf8\\.md$"]
 
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+
 # Change it to your Disqus shortname before using
 disqusShortname: awprc
 
@@ -129,6 +134,6 @@ related:
         - name: categories
           weight: 200
 
-markup:
-    highlight:
-        noClasses: false
+# markup:
+#     highlight:
+#         noClasses: false
