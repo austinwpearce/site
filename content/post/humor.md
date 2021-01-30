@@ -24,6 +24,8 @@ I'm glad I don't work in IT. I do pride myself in being able to keep a good mach
 
 ![](https://imgs.xkcd.com/comics/norm_normal_file_format.png)
 
+![](https://imgs.xkcd.com/comics/impostor_syndrome.png)
+
 # PhD Comics
 
 ![](https://phdcomics.com/comics/archive/phd072718s.gif)
