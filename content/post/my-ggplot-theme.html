@@ -1,0 +1,65 @@
+---
+title: "My ggplot theme"
+lastmod: "2021-02-19"
+slug: my-ggplot-theme
+description: "It can look nicer."
+tags:
+- data visualization
+- R
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p>In R, I plot with <code>ggplot</code>. Inspired by others who have also made themes that look nicer than the default options provided in the package, I present my own theme (at the end).</p>
+<pre class="r"><code># package contains ggplot
+library(tidyverse)</code></pre>
+<div id="examples-of-default-plots" class="section level1">
+<h1>Examples of default plots</h1>
+<p>I’ll plot the built-in <code>mtcars</code> data, with some added titles and with modifications to the points (colors and shapes).</p>
+<p><img src="/post/my-ggplot-theme_files/figure-html/default-1.png" width="672" /></p>
+<p>This default plot theme has one glaring issue, in my opinion: the gray background. It reduced contrast and obscures patterns. It can work, but even then it needs an all-gray plot to work, also requiring really dark points to see well. Here are two other default plot themes.</p>
+<pre class="r"><code># theme_bw
+p + theme_bw()</code></pre>
+<p><img src="/post/my-ggplot-theme_files/figure-html/more-defaults-1.png" width="672" /></p>
+<pre class="r"><code># theme_classic
+p + theme_classic()</code></pre>
+<p><img src="/post/my-ggplot-theme_files/figure-html/more-defaults-2.png" width="672" /></p>
+<p>The classic choice isn’t bad; has a clean feel that says, “I’m ready for a look”. But making your own theme isn’t that hard, and the results can be more rewarding. Of co[^1]urse, packages like <code>ggthemes</code> and <code>hrbrthemes</code>[^1] exist, but again, it isn’t that hard to do yourself.</p>
+<p>[^1] I was clearly inspired by <code>hrbrthemes</code>, but my own modifications mean that I claim it as my own now. Plus I don’t have to load an extra package.</p>
+</div>
+<div id="my-theme" class="section level1">
+<h1>My theme</h1>
+<pre class="r"><code>library(extrafont)</code></pre>
+<pre><code>## Registering fonts with R</code></pre>
+<pre class="r"><code>rc &lt;- c(&quot;Roboto Condensed&quot;)
+
+# My own ggplot2 theme
+theme_set(
+  theme_minimal(base_family = rc,
+                base_size = 14) +
+    theme(
+      plot.background = NULL,
+      plot.margin = margin(t = 2, r = 2, b = 2, l = 2, unit = &quot;pt&quot;),
+      panel.grid = element_line(color = &quot;#F1F1F1&quot;),
+      panel.border = element_blank(),
+      axis.line = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title.y = element_text(
+        hjust = 1,
+        margin = margin(t = 0, r = 10, b = 0, l = 0, unit = &quot;pt&quot;)),
+      axis.title.x = element_text(
+        hjust = 0,
+        margin = margin(t = 10, r = 0, b = 0, l = 0, unit = &quot;pt&quot;)),
+      axis.text = element_text(family = rc),
+      legend.title.align = 0,
+      legend.key.height = unit(x = 5, units = &quot;mm&quot;),
+      legend.justification = c(1, 1),
+      legend.position = c(1, 1)
+    )
+)
+
+p</code></pre>
+<p><img src="/post/my-ggplot-theme_files/figure-html/my-theme-1.png" width="672" /></p>
+<p>I currently like the Roboto Condensed font (used with <code>extrafont</code>). I like using faint lines behind the data, that help interested viewers extract data. I like aligning the axis titles to the top and left. This makes sense as most plots are read left-to-right.</p>
+</div>

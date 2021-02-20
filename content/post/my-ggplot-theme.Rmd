@@ -1,0 +1,84 @@
+---
+title: "My ggplot theme"
+lastmod: "2021-02-19"
+slug: my-ggplot-theme
+description: "It can look nicer."
+tags:
+- data visualization
+- R
+---
+
+In R, I plot with `ggplot`. Inspired by others who have also made themes that look nicer than the default options provided in the package, I present my own theme (at the end).
+
+```{r setup, message=FALSE}
+# package contains ggplot
+library(tidyverse)
+```
+
+# Examples of default plots
+
+I'll plot the built-in `mtcars` data, with some added titles and with modifications to the points (colors and shapes).
+
+```{r default, echo=FALSE}
+p <- mtcars %>% 
+  mutate(cyl = as.factor(cyl)) %>% 
+  ggplot(aes(hp, mpg, shape = cyl, color = cyl)) +
+  geom_point(size = 2, alpha = 0.5) +
+  scale_color_viridis_d(end = 0.8) +
+  labs(title = "This is the title",
+       subtitle = "This is the subtitle",
+       x = "Power (hp)",
+       y = "Fuel Efficiency (mpg)")
+p
+```
+
+This default plot theme has one glaring issue, in my opinion: the gray background. It reduced contrast and obscures patterns. It can work, but even then it needs an all-gray plot to work, also requiring really dark points to see well. Here are two other default plot themes.
+
+```{r more-defaults}
+# theme_bw
+p + theme_bw()
+
+# theme_classic
+p + theme_classic()
+```
+
+The classic choice isn't bad; has a clean feel that says, "I'm ready for a look". But making your own theme isn't that hard, and the results can be more rewarding. Of co[^1]urse, packages like `ggthemes` and `hrbrthemes`[^1] exist, but again, it isn't that hard to do yourself.
+
+[^1] I was clearly inspired by `hrbrthemes`, but my own modifications mean that I claim it as my own now. Plus I don't have to load an extra package.
+
+# My theme
+
+```{r my-theme}
+library(extrafont)
+
+rc <- c("Roboto Condensed")
+
+# My own ggplot2 theme
+theme_set(
+  theme_minimal(base_family = rc,
+                base_size = 14) +
+    theme(
+      plot.background = NULL,
+      plot.margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "pt"),
+      panel.grid = element_line(color = "#F1F1F1"),
+      panel.border = element_blank(),
+      axis.line = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title.y = element_text(
+        hjust = 1,
+        margin = margin(t = 0, r = 10, b = 0, l = 0, unit = "pt")),
+      axis.title.x = element_text(
+        hjust = 0,
+        margin = margin(t = 10, r = 0, b = 0, l = 0, unit = "pt")),
+      axis.text = element_text(family = rc),
+      legend.title.align = 0,
+      legend.key.height = unit(x = 5, units = "mm"),
+      legend.justification = c(1, 1),
+      legend.position = c(1, 1)
+    )
+)
+
+p
+```
+
+I currently like the Roboto Condensed font (used with `extrafont`). I like using faint lines behind the data, that help interested viewers extract data. I like aligning the axis titles to the top and left. This makes sense as most plots are read left-to-right.

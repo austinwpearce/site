@@ -1,5 +1,5 @@
 ---
-title: "Finding the Point of Zero Charge in R"
+title: "How to find the point of zero charge in R"
 lastmod: "2021-01-29"
 slug: point-zero-charge
 description: "What is the point of this anyways?"
@@ -15,23 +15,41 @@ If you have your own data, import the data frame into *R* having set the variabl
 
 Or if you want to use the R code only, just input your PZC data manually into the respective strings (ph, anion, and cation). Make sure to fill out the strings in order of the observations, starting with the first PZC measurement. For this all to work, I might add, your cation exchange values should be positive when recorded, though it'll be treated as negative later during the calculation.
 
-```{r setup, include=FALSE}
-# you'll need packages as usual
+```{r setup, message=FALSE}
+# packages
 library(tidyverse)
-library(extrafont)
-library(hrbrthemes)
-
-# more visually appealing plots
-theme_set(
-  hrbrthemes::theme_ipsum_rc(
-    axis_title_just = "br",
-    axis_title_size = 14,
-    plot_margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "mm"),
-    grid_col = "#F1F1F1"
-    )
-  )
 ```
 
+```{r theme, include=FALSE}
+library(extrafont)
+
+rc <- c("Roboto Condensed")
+
+# My own ggplot2 theme
+theme_set(
+  theme_minimal(base_family = rc,
+                base_size = 14) +
+    theme(
+      plot.background = NULL,
+      plot.margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "pt"),
+      panel.grid = element_line(color = "#F1F1F1"),
+      panel.border = element_blank(),
+      axis.line = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title.y = element_text(
+        hjust = 1,
+        margin = margin(t = 0, r = 10, b = 0, l = 0, unit = "pt")),
+      axis.title.x = element_text(
+        hjust = 0,
+        margin = margin(t = 10, r = 0, b = 0, l = 0, unit = "pt")),
+      axis.text = element_text(family = rc),
+      legend.title.align = 0,
+      legend.key.height = unit(x = 5, units = "mm"),
+      legend.justification = c(1, 1),
+      legend.position = c(1, 1)
+    )
+)
+```
 
 ```{r, data}
 pH <- c(3.2, 3.4, 3.75, 4.1, 4.85, 6.4, 6.7)
