@@ -199,31 +199,4 @@ Now, what if the two points with "high" STK (\> 180 ppm), were removed? How woul
 
 ------------------------------------------------------------------------
 
-Not that it's important, but here is how I themed my ggplots.
-
-    rc <- c("Roboto Condensed")
-
-    # My own ggplot2 theme
-    theme_set(
-      theme_minimal(base_family = rc,
-                    base_size = 14) +
-        theme(
-          plot.background = NULL,
-          plot.margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "pt"),
-          panel.grid = element_line(color = "#F1F1F1"),
-          panel.border = element_blank(),
-          axis.line = element_blank(),
-          axis.ticks = element_blank(),
-          axis.title.y = element_text(
-            hjust = 1,
-            margin = margin(t = 0, r = 10, b = 0, l = 0, unit = "pt")),
-          axis.title.x = element_text(
-            hjust = 0,
-            margin = margin(t = 10, r = 0, b = 0, l = 0, unit = "pt")),
-          axis.text = element_text(family = rc),
-          legend.title.align = 0,
-          legend.key.height = unit(x = 5, units = "mm"),
-          legend.justification = c(1, 1),
-          legend.position = c(1, 1)
-        )
-    )
+Not that it's important, but here is how I [themed my ggplots](https://gradcylinder.org/my-ggplot-theme/).

@@ -15,7 +15,7 @@ In R, I plot with `ggplot`. Inspired by others who have also made themes that lo
 library(tidyverse)
 ```
 
-# Examples of default plots
+## Examples of default plots
 
 I'll plot the built-in `mtcars` data, with some added titles and with modifications to the points (colors and shapes).
 
@@ -42,11 +42,11 @@ p + theme_bw()
 p + theme_classic()
 ```
 
-The classic choice isn't bad; has a clean feel that says, "I'm ready for a look". But making your own theme isn't that hard, and the results can be more rewarding. Of co[^1]urse, packages like `ggthemes` and `hrbrthemes`[^1] exist, but again, it isn't that hard to do yourself.
+The classic choice isn't bad; has a clean feel that says, "I'm ready for a look". But making your own theme isn't that hard, and the results can be more rewarding. Of course, packages like `ggthemes` and `hrbrthemes`[^1] exist, but again, it isn't that hard to do yourself.
 
 [^1] I was clearly inspired by `hrbrthemes`, but my own modifications mean that I claim it as my own now. Plus I don't have to load an extra package.
 
-# My theme
+## My theme
 
 ```{r my-theme}
 library(extrafont)

@@ -174,35 +174,9 @@ lin_plateau &lt;- function(data) {
 <pre><code>## [1] &quot;Plateau at  95.5075739785243 % yield&quot;</code></pre>
 <p><img src="/post/how-to-linear-plateau-R_files/figure-html/lp-3-3.png" width="672" /></p>
 <p>The critical soil concentration for potassium appears to be around 75 ppm, though the confidence interval is pretty wide. This is probably due to the lack of data points. The model summary shows that most of the error comes from the the <em>a</em> and <em>c</em> parameters, essentially the intercept and join-point. The psuedo-R<sup>2</sup> is about 0.66, so not too bad. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.</p>
-<p>Now, what if the two points with “high” STK (&gt; 180 ppm), were removed? How would that change the analysis? Go back and test yourself<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>.</p>
+<p>Now, what if the two points with “high” STK (&gt; 180 ppm), were removed? How would that change the analysis? Go back and test yourself<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>. How do other models compare? Quadratic-plateau? Mitscherlich-Bray?</p>
 <hr />
-<p>Not that it’s important, but here is how I themed my ggplots.</p>
-<pre><code>rc &lt;- c(&quot;Roboto Condensed&quot;)
-
-# My own ggplot2 theme
-theme_set(
-  theme_minimal(base_family = rc,
-                base_size = 14) +
-    theme(
-      plot.background = NULL,
-      plot.margin = margin(t = 2, r = 2, b = 2, l = 2, unit = &quot;pt&quot;),
-      panel.grid = element_line(color = &quot;#F1F1F1&quot;),
-      panel.border = element_blank(),
-      axis.line = element_blank(),
-      axis.ticks = element_blank(),
-      axis.title.y = element_text(
-        hjust = 1,
-        margin = margin(t = 0, r = 10, b = 0, l = 0, unit = &quot;pt&quot;)),
-      axis.title.x = element_text(
-        hjust = 0,
-        margin = margin(t = 10, r = 0, b = 0, l = 0, unit = &quot;pt&quot;)),
-      axis.text = element_text(family = rc),
-      legend.title.align = 0,
-      legend.key.height = unit(x = 5, units = &quot;mm&quot;),
-      legend.justification = c(1, 1),
-      legend.position = c(1, 1)
-    )
-)</code></pre>
+<p>Not that it’s important, but here is how I <a href="https://gradcylinder.org/my-ggplot-theme/">themed my ggplots</a>.</p>
 </div>
 <div class="footnotes">
 <hr />
