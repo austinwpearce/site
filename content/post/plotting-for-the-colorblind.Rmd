@@ -115,6 +115,8 @@ There are other says to simulate color blindness in R and on the web. [`colorBli
 
 Interestingly, a person I shared this with (who is red-green color blind) said they could actually see some of the numbers in the image on the right. This supports the fact that those with color vision deficiencies can detect contrast or color brightness pretty well.
 
+Another would be a desktop app like [Sim Daltonism](https://apps.apple.com/us/app/sim-daltonism/id693112260), though only for Mac.
+
 # Solutions
 
 When preparing visualizations of data, consider the following:

@@ -1,0 +1,229 @@
+---
+title: "How to fit linear-plateau model in R"
+lastmod: "2021-02-19"
+slug: fit-linear-plateau-r
+description: "Agricultureal yields go up, then level off."
+tags:
+- statistics
+- modeling
+- soil chemistry
+- soil testing
+- soil correlation
+- crops
+---
+
+The `rcompanion` package is the main reason I figured out how to fit non-linear models to agricultural data. Go [reference it here](https://rcompanion.org/handbook/I_11.html). I'll wait.
+
+This post provides minimal explanations, and is intended for the person who has been googling how to fit linear-plateau models in R. This post also provides the function within another function that sort of helps one do linear-plateau fits *and* make a `ggplot` style figure all at once. So first, load some packages.
+
+```{r setup, message=FALSE}
+library(tidyverse)
+library(rcompanion)
+library(minpack.lm)
+library(nlstools)
+library(agridat)
+```
+
+```{r theme, include=FALSE}
+library(extrafont)
+
+rc <- c("Roboto Condensed")
+
+# My own ggplot2 theme
+theme_set(
+  theme_minimal(base_family = rc,
+                base_size = 14) +
+    theme(
+      plot.background = NULL,
+      plot.margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "pt"),
+      panel.grid = element_line(color = "#F1F1F1"),
+      panel.border = element_blank(),
+      axis.line = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title.y = element_text(
+        hjust = 1,
+        margin = margin(t = 0, r = 10, b = 0, l = 0, unit = "pt")),
+      axis.title.x = element_text(
+        hjust = 0,
+        margin = margin(t = 10, r = 0, b = 0, l = 0, unit = "pt")),
+      axis.text = element_text(family = rc),
+      legend.title.align = 0,
+      legend.key.height = unit(x = 5, units = "mm"),
+      legend.justification = c(1, 1),
+      legend.position = c(1, 1)
+    )
+)
+```
+
+The data is from some cotton trials in the `agridat` package. Basically, more potassium measured in the soil should correlate to more cotton yield, but the relationship will not be linear. Fitting a model to determine something about this relationship is central to the soil-test correlation process. Let's plot it.
+
+```{r data}
+cotton <- agridat::cate.potassium
+
+cotton %>% 
+  ggplot(aes(x = potassium, y = yield)) +
+  geom_point(size = 1, alpha = 0.5) +
+  geom_rug(alpha = 0.5, length = unit(2, "pt")) +
+  scale_x_continuous(breaks = seq(0, 1000, 20)) +
+  scale_y_continuous(breaks = seq(0, 200, 5)) +
+  labs(title = paste(
+    "Relative yield and soil potassium for", nrow(cotton), "cotton trials"),
+    y = "Relative yield (%)",
+    x = "Concentration of Soil Potassium (ppm)")
+  
+```
+
+The relationship between soil-test potassium (STK) and relative cotton yield may be non-linear. Perhaps a polynomial function could be fit, or the data could be transformed, but we'll fit a non-linear model known as the linear-plateau.
+
+```{r lp-1}
+## Linear-plateau model
+lp <- function(x, a, b, c) {
+    if_else(condition = x < c,
+            true = a + b * x,
+            false = a + b * c)
+}
+```
+
+This function says that up until some join-point, the relationship is linear, after which the stick breaks and it is a flat line (plateau). Sometimes this model is called *broken-stick* or *linear-plus-plateau*. That join-point is important; it represents a critical concentration for the nutrient in the soil.
+
+Below is my big function to fit it, get some useful numbers, and plot it. I'm not a function wizard, but I'm trying, so forgive any poor coding practices. That's why in my function, I've just put in the variables `yield` and `potassium`,
+
+## What is going on in this 'function'?
+
+1.  Get initial values for the `nlsLM()` function coming up.
+
+-   this can be done by fitting a linear model, and yanking out coefficients.
+
+2.  Run `nlsLM()`[^1] with the `lp()` model as part of the formula.
+3.  Look at your model summary.
+4.  Make a null model, and get a pseudo-R^2^ value.
+5.  Get confidence interval for the join-point.
+6.  Look at residuals.
+7.  Get coefficients from model for use in `ggplot`.
+8.  Make a line from coefficients, and plot it with the cotton yield data.
+
+[^1]: `nlsLM()` is more reliabel overall than plain `nls()`. I've had pretty good luck with nls(), but sometimes it fails. `nlsLM()` seems to fail less. You can test their similarity by using *a*, *b*, *c* coefficients in the output of `nlsLM()` as inputs to `nls()`.
+
+```{r lp-2}
+# run model and graph all in one!
+lin_plateau <- function(data) {
+    # initial values
+    ini_fit <- lm(data = data, formula = yield ~ potassium)
+    ini_a <- ini_fit$coefficients[[1]]
+    ini_b <- ini_fit$coefficients[[2]]
+    ini_c <- mean(data$potassium)
+    
+    # linear plateau model
+    lp_model <<- nlsLM(
+        formula = yield ~ lp(potassium, a, b, c),
+        data = data,
+        start = list(a = ini_a, b = ini_c, c = ini_c)
+    )
+
+    print(summary(lp_model))
+    
+    # Define null model
+    m.ini <- mean(data$yield)
+    
+    nullfunct <- function(x, m) {
+    m
+}
+    null <- nls(yield ~ nullfunct(potassium, m),
+                data = data,
+                start = list(m = m.ini),
+                trace = FALSE,
+                nls.control(maxiter = 1000))
+    
+    # Find p-value and pseudo R-squared
+    pseudo_r2 <- nagelkerke(lp_model, null)[2]
+    print(pseudo_r2)
+    
+    # print and set confidence interval
+    confinterval <- confint2(lp_model, level = 0.95)
+    conflo <- round(confinterval[3, 1], 1)
+    confhi <- round(confinterval[3, 2], 1)
+    print("Confidence Interval")
+    print(confinterval)
+    
+    plotNormalHistogram(residuals(lp_model))
+    plot(fitted(lp_model), residuals(lp_model))
+    
+    a  <- coefficients(lp_model)[[1]]
+    b  <- coefficients(lp_model)[[2]]
+    cc <- coefficients(lp_model)[[3]]
+    plateau <- a + b * cc
+    
+    print(paste("Plateau at ", plateau, "% yield"))
+    
+    # ggplot style
+    lp_line <- tibble(x = c(min(data$potassium), cc, max(data$potassium)),
+        y = c(a, a + (b * cc), a + (b * cc)))
+    
+    # other plot
+    data %>%
+      ggplot(aes(x = potassium, y = yield)) +
+      geom_point(size = 1, alpha = 0.5) +
+      geom_rug(alpha = 0.5, length = unit(2, "pt")) +
+      geom_line(data = lp_line, aes(x = x, y = y)) +
+      geom_vline(xintercept = cc,
+                 color = "#CC0000") +
+      geom_vline(
+        xintercept = c(conflo, confhi),
+        color = "#CC0000",
+        alpha = 0.2
+      ) +
+      scale_x_continuous(breaks = seq(0, 1000, 20)) +
+      scale_y_continuous(breaks = seq(0, 200, 5)) +
+      labs(subtitle = paste0("Critical concentraion = ", round(cc, 0),
+        " ppm; 95% CL [", conflo, ", ", confhi, "]"))
+}
+```
+
+## The result
+
+So how do you fit a linear-plateau model in R? Like this:
+
+```{r lp-3}
+lin_plateau(cotton) +
+  labs(title = paste(
+    "Relative yield and soil potassium for", nrow(cotton), "cotton trials"),
+    y = "Relative yield (%)",
+    x = "Concentration of Soil Potassium (ppm)")
+```
+
+The critical soil concentration for potassium appears to be around 75 ppm, though the confidence interval is pretty wide. This is probably due to the lack of data points. The model summary shows that most of the error comes from the the *a* and *c* parameters, essentially the intercept and join-point. The psuedo-R^2^ is about 0.66, so not too bad. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.
+
+Now, what if the two points with "high" STK (\> 180 ppm), were removed? How would that change the analysis? Go back and test yourself[^2]. How do other models compare? Quadratic-plateau? Mitscherlich-Bray?
+
+[^2]: Hint: `filter()`
+
+------------------------------------------------------------------------
+
+Not that it's important, but here is how I themed my ggplots.
+
+    rc <- c("Roboto Condensed")
+
+    # My own ggplot2 theme
+    theme_set(
+      theme_minimal(base_family = rc,
+                    base_size = 14) +
+        theme(
+          plot.background = NULL,
+          plot.margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "pt"),
+          panel.grid = element_line(color = "#F1F1F1"),
+          panel.border = element_blank(),
+          axis.line = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.y = element_text(
+            hjust = 1,
+            margin = margin(t = 0, r = 10, b = 0, l = 0, unit = "pt")),
+          axis.title.x = element_text(
+            hjust = 0,
+            margin = margin(t = 10, r = 0, b = 0, l = 0, unit = "pt")),
+          axis.text = element_text(family = rc),
+          legend.title.align = 0,
+          legend.key.height = unit(x = 5, units = "mm"),
+          legend.justification = c(1, 1),
+          legend.position = c(1, 1)
+        )
+    )
