@@ -14,8 +14,8 @@ tags:
 <p>In R, I plot with <code>ggplot</code>. Inspired by others who have also made themes that look nicer than the default options provided in the package, I present my own theme (at the end).</p>
 <pre class="r"><code># package contains ggplot
 library(tidyverse)</code></pre>
-<div id="examples-of-default-plots" class="section level2">
-<h2>Examples of default plots</h2>
+<div id="examples-of-default-plots" class="section level1">
+<h1>Examples of default plots</h1>
 <p>I’ll plot the built-in <code>mtcars</code> data, with some added titles and with modifications to the points (colors and shapes).</p>
 <p><img src="/post/my-ggplot-theme_files/figure-html/default-1.png" width="672" /></p>
 <p>This default plot theme has one glaring issue, in my opinion: the gray background. It reduced contrast and obscures patterns. It can work, but even then it needs an all-gray plot to work, also requiring really dark points to see well. Here are two other default plot themes.</p>
@@ -25,11 +25,10 @@ p + theme_bw()</code></pre>
 <pre class="r"><code># theme_classic
 p + theme_classic()</code></pre>
 <p><img src="/post/my-ggplot-theme_files/figure-html/more-defaults-2.png" width="672" /></p>
-<p>The classic choice isn’t bad; has a clean feel that says, “I’m ready for a look”. But making your own theme isn’t that hard, and the results can be more rewarding. Of course, packages like <code>ggthemes</code> and <code>hrbrthemes</code>[^1] exist, but again, it isn’t that hard to do yourself.</p>
-<p>[^1] I was clearly inspired by <code>hrbrthemes</code>, but my own modifications mean that I claim it as my own now. Plus I don’t have to load an extra package.</p>
+<p>The classic choice isn’t bad; has a clean feel that says, “I’m ready for a look”. But making your own theme isn’t that hard, and the results can be more rewarding. Of course, packages like <code>ggthemes</code> and <code>hrbrthemes</code><a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> exist, but again, it isn’t that hard to do yourself.</p>
 </div>
-<div id="my-theme" class="section level2">
-<h2>My theme</h2>
+<div id="my-theme" class="section level1">
+<h1>My theme</h1>
 <pre class="r"><code>library(extrafont)</code></pre>
 <pre><code>## Registering fonts with R</code></pre>
 <pre class="r"><code>rc &lt;- c(&quot;Roboto Condensed&quot;)
@@ -62,4 +61,10 @@ theme_set(
 p</code></pre>
 <p><img src="/post/my-ggplot-theme_files/figure-html/my-theme-1.png" width="672" /></p>
 <p>I currently like the Roboto Condensed font (used with <code>extrafont</code>). I like using faint lines behind the data, that help interested viewers extract data. I like aligning the axis titles to the top and left. This makes sense as most plots are read left-to-right.</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>My theme is clearly inspired by `hrbrthemes`, but my own modifications mean that I claim it as my own now. Plus I don’t have to load an extra package.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
 </div>

@@ -55,6 +55,8 @@ theme_set(
 )
 ```
 
+# The data
+
 The data is from some cotton trials in the `agridat` package. Basically, more potassium measured in the soil should correlate to more cotton yield, but the relationship will not be linear. Fitting a model to determine something about this relationship is central to the soil-test correlation process. Let's plot it.
 
 ```{r data}
@@ -88,7 +90,7 @@ This function says that up until some join-point, the relationship is linear, af
 
 Below is my big function to fit it, get some useful numbers, and plot it. I'm not a function wizard, but I'm trying, so forgive any poor coding practices. That's why in my function, I've just put in the variables `yield` and `potassium`,
 
-## What is going on in this 'function'?
+# What is going on in this 'function'?
 
 1.  Get initial values for the `nlsLM()` function coming up.
 
@@ -179,7 +181,7 @@ lin_plateau <- function(data) {
 }
 ```
 
-## The result
+# The result
 
 So how do you fit a linear-plateau model in R? Like this:
 
