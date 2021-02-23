@@ -2,7 +2,7 @@
 title: "How to fit linear-plateau models in R"
 lastmod: "2021-02-19"
 slug: linear-plateau
-description: "Agricultural yields go up, then level off."
+description: "Agricultural yields go up a line, then level off."
 tags:
 - statistics
 - modeling
@@ -25,8 +25,8 @@ library(rcompanion)
 library(minpack.lm)
 library(nlstools)
 library(agridat)</code></pre>
-<div id="the-data" class="section level1">
-<h1>The data</h1>
+<div id="the-data" class="section level2">
+<h2>The data</h2>
 <p>The data is from some cotton trials in the <code>agridat</code> package. Basically, more potassium measured in the soil should correlate to more cotton yield, but the relationship will not be linear. Fitting a model to determine something about this relationship is central to the soil-test correlation process. Let’s plot it.</p>
 <pre class="r"><code>cotton &lt;- agridat::cate.potassium
 
@@ -51,8 +51,8 @@ lp &lt;- function(x, a, b, c) {
 <p>This function says that up until some join-point, the relationship is linear, after which the stick breaks and it is a flat line (plateau). Sometimes this model is called <em>broken-stick</em> or <em>linear-plus-plateau</em>. That join-point is important; it represents a critical concentration for the nutrient in the soil.</p>
 <p>Below is my big function to fit it, get some useful numbers, and plot it. I’m not a function wizard, but I’m trying, so forgive any poor coding practices. That’s why in my function, I’ve just put in the variables <code>yield</code> and <code>potassium</code>,</p>
 </div>
-<div id="what-is-going-on-in-the-following-function" class="section level1">
-<h1>What is going on in the following ‘function’?</h1>
+<div id="what-is-going-on-in-the-following-function" class="section level2">
+<h2>What is going on in the following ‘function’?</h2>
 <ol style="list-style-type: decimal">
 <li>Get initial values for the <code>nlsLM()</code> function coming up.</li>
 </ol>
@@ -141,8 +141,8 @@ lin_plateau &lt;- function(data) {
         &quot; ppm; 95% CL [&quot;, conflo, &quot;, &quot;, confhi, &quot;]&quot;))
 }</code></pre>
 </div>
-<div id="the-result" class="section level1">
-<h1>The result</h1>
+<div id="the-result" class="section level2">
+<h2>The result</h2>
 <p>So how do you fit a linear-plateau model in R? Like this:</p>
 <pre class="r"><code>lin_plateau(cotton) +
   labs(title = paste(
@@ -180,9 +180,7 @@ lin_plateau &lt;- function(data) {
 <pre><code>## [1] &quot;Plateau at  95.5 % yield&quot;</code></pre>
 <p><img src="/post/how-to-linear-plateau-R_files/figure-html/lp-3-3.png" width="672" /></p>
 <p>The critical soil concentration for potassium appears to be around 75 ppm, though the confidence interval is pretty wide. This is probably due to the lack of data points. The model summary shows that most of the error comes from the the <em>a</em> and <em>c</em> parameters, essentially the intercept and join-point. The psuedo-R<sup>2</sup> is about 0.66, so not too bad. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.</p>
-<p>Now, what if the two points with “high” STK (&gt; 180 ppm), were removed? How would that change the analysis? Go back and test yourself<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>. How do other models compare? Quadratic-plateau? Mitscherlich-Bray?</p>
-<hr />
-<p>How I <a href="https://gradcylinder.org/my-ggplot-theme/">themed my ggplots</a>.</p>
+<p>Now, what if the two points with “high” STK (&gt; 180 ppm), were removed? How would that change the analysis? Go back and test yourself<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>. How do other models compare? <a href="https://gradcylinder.org/quad-plateau/">Quadratic-plateau</a>? Mitscherlich-Bray?</p>
 </div>
 <div class="footnotes">
 <hr />

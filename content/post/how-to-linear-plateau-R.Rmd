@@ -58,7 +58,7 @@ theme_set(
 )
 ```
 
-# The data
+## The data
 
 The data is from some cotton trials in the `agridat` package. Basically, more potassium measured in the soil should correlate to more cotton yield, but the relationship will not be linear. Fitting a model to determine something about this relationship is central to the soil-test correlation process. Let's plot it.
 
@@ -93,7 +93,7 @@ This function says that up until some join-point, the relationship is linear, af
 
 Below is my big function to fit it, get some useful numbers, and plot it. I'm not a function wizard, but I'm trying, so forgive any poor coding practices. That's why in my function, I've just put in the variables `yield` and `potassium`,
 
-# What is going on in the following 'function'?
+## What is going on in the following 'function'?
 
 1.  Get initial values for the `nlsLM()` function coming up.
 
@@ -184,7 +184,7 @@ lin_plateau <- function(data) {
 }
 ```
 
-# The result
+## The result
 
 So how do you fit a linear-plateau model in R? Like this:
 
@@ -198,10 +198,6 @@ lin_plateau(cotton) +
 
 The critical soil concentration for potassium appears to be around 75 ppm, though the confidence interval is pretty wide. This is probably due to the lack of data points. The model summary shows that most of the error comes from the the *a* and *c* parameters, essentially the intercept and join-point. The psuedo-R^2^ is about 0.66, so not too bad. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.
 
-Now, what if the two points with "high" STK (\> 180 ppm), were removed? How would that change the analysis? Go back and test yourself[^2]. How do other models compare? Quadratic-plateau? Mitscherlich-Bray?
+Now, what if the two points with "high" STK (\> 180 ppm), were removed? How would that change the analysis? Go back and test yourself[^2]. How do other models compare? [Quadratic-plateau](https://gradcylinder.org/quad-plateau/)? Mitscherlich-Bray?
 
 [^2]: Hint: `filter()`
-
-------------------------------------------------------------------------
-
-How I [themed my ggplots](https://gradcylinder.org/my-ggplot-theme/).

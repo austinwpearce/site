@@ -1,6 +1,6 @@
 ---
 title: "How to fit quadratic-plateau models in R"
-lastmod: "2021-02-22"
+lastmod: "2021-02-20"
 slug: quad-plateau
 description: "Agricultural yields go up a curve, then level off."
 tags:
@@ -17,7 +17,11 @@ editor_options:
 
 The `rcompanion` package is the main reason I figured out how to fit non-linear models to agricultural data. Go [reference it here](https://rcompanion.org/handbook/I_11.html). I'll wait.
 
-This post provides minimal explanations, and is intended for the person who has been googling how to fit linear-plateau models in R. This post also provides the function within another function that sort of helps one do linear-plateau fits *and* make a `ggplot` style figure all at once. So first, load some packages.
+Like [my post on linear-plateau models](https://gradcylinder.org/linear-plateau/) in R, this post is for the person who has been googling how to fit quadratic-plateau models in R. Quadratic-plateau models are also know as **quad-plats**[^1]. This post provides my function within another function that sort of helps one do quadratic-plateau fits *and* make a `ggplot` style figure all at once.
+
+[^1]: This isn't true, but I wish they were.
+
+So first, load some packages.
 
 ```{r setup, message=FALSE}
 library(tidyverse)
@@ -33,9 +37,8 @@ library(extrafont)
 rc <- c("Roboto Condensed")
 
 # My own ggplot2 theme
-theme_set(
-  theme_minimal(base_family = rc,
-                base_size = 14) +
+theme_gradcylinder <- theme_minimal(base_family = rc,
+                                    base_size = 14) +
     theme(
       plot.background = NULL,
       plot.margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "pt"),
@@ -55,10 +58,11 @@ theme_set(
       legend.justification = c(1, 1),
       legend.position = c(1, 1)
     )
-)
+
+theme_set(theme_gradcylinder)
 ```
 
-# The data
+## The data
 
 The data is from some cotton trials in the `agridat` package. Basically, more potassium measured in the soil should correlate to more cotton yield, but the relationship will not be linear. Fitting a model to determine something about this relationship is central to the soil-test correlation process. Let's plot it.
 
@@ -78,28 +82,27 @@ cotton %>%
   
 ```
 
-The relationship between soil-test potassium (STK) and relative cotton yield may be non-linear. Perhaps a polynomial function could be fit, or the data could be transformed, but we'll fit a non-linear model known as the linear-plateau.
+The relationship between soil-test potassium (STK) and relative cotton yield may be non-linear. Perhaps a polynomial function could be fit, or the data could be transformed, but we'll fit a non-linear model known as the quadratic-plateau.
 
-```{r lp-1}
-## Linear-plateau model
-lp <- function(x, a, b, c) {
-    if_else(condition = x < c,
-            true = a + b * x,
-            false = a + b * c)
+```{r qp-1}
+qp <- function(x, a, b, c) {
+    if_else(condition = x < c, 
+            true  = a + b * x + (-0.5 * b / c) * x * x,
+            false = a + b * c + (-0.5 * b / c) * c * c)
 }
 ```
 
-This function says that up until some join-point, the relationship is linear, after which the stick breaks and it is a flat line (plateau). Sometimes this model is called *broken-stick* or *linear-plus-plateau*. That join-point is important; it represents a critical concentration for the nutrient in the soil.
+This function says that up until some join-point, the relationship is a second-order polynomial (quadratic), after which it hits a flat line (plateau). Sometimes this model is called *quadratic-plus-plateau*. That join-point is important; it represents a critical concentration for the nutrient in the soil. The join-point will always be higher than with a linear-plateau, an important consideration.
 
 Below is my big function to fit it, get some useful numbers, and plot it. I'm not a function wizard, but I'm trying, so forgive any poor coding practices. That's why in my function, I've just put in the variables `yield` and `potassium`,
 
-# What is going on in the following 'function'?
+## What is going on in the following 'function'?
 
 1.  Get initial values for the `nlsLM()` function coming up.
 
 -   this can be done by fitting a linear model, and yanking out coefficients.
 
-2.  Run `nlsLM()`[^1] with the `lp()` model as part of the formula.
+2.  Run `nlsLM()`[^2] with the `qp()` model as part of the formula.
 3.  Look at your model summary.
 4.  Make a null model, and get a pseudo-R^2^ value.
 5.  Get confidence interval for the join-point.
@@ -107,101 +110,110 @@ Below is my big function to fit it, get some useful numbers, and plot it. I'm no
 7.  Get coefficients from model for use in `ggplot`.
 8.  Make a line from coefficients, and plot it with the cotton yield data.
 
-[^1]: `nlsLM()` is more reliabel overall than plain `nls()`. I've had pretty good luck with nls(), but sometimes it fails. `nlsLM()` seems to fail less. You can test their similarity by using *a*, *b*, *c* coefficients in the output of `nlsLM()` as inputs to `nls()`.
+[^2]: `nlsLM()` is more reliabel overall than plain `nls()`. I've had pretty good luck with nls(), but sometimes it fails. `nlsLM()` seems to fail less. You can test their similarity by using *a*, *b*, *c* coefficients in the output of `nlsLM()` as inputs to `nls()`.
 
-```{r lp-2}
+```{r qp-2}
 # run model and graph all in one!
-lin_plateau <- function(data) {
-    # initial values
-    ini_fit <- lm(data = data, formula = yield ~ potassium)
-    ini_a <- ini_fit$coefficients[[1]]
-    ini_b <- ini_fit$coefficients[[2]]
-    ini_c <- mean(data$potassium)
-    
-    # linear plateau model
-    lp_model <<- nlsLM(
-        formula = yield ~ lp(potassium, a, b, c),
-        data = data,
-        start = list(a = ini_a, b = ini_c, c = ini_c)
-    )
-
-    print(summary(lp_model))
-    
-    # Define null model
-    m.ini <- mean(data$yield)
-    
-    nullfunct <- function(x, m) {
+quad_plateau <- function(data) {
+  # initial values
+  ini_fit <- lm(data = data, formula = yield ~ potassium)
+  ini_a <- ini_fit$coefficients[[1]]
+  ini_b <- ini_fit$coefficients[[2]]
+  ini_c <- mean(data$potassium)
+  
+  # linear plateau model
+  qp_model <<- nlsLM(
+    formula = yield ~ qp(potassium, a, b, c),
+    data = data,
+    start = list(a = ini_a, b = ini_c, c = ini_c)
+  )
+  
+  print(summary(qp_model))
+  
+  
+  # Define null model
+  nullfunct <- function(x, m) {
     m
-}
-    null <- nls(yield ~ nullfunct(potassium, m),
-                data = data,
-                start = list(m = m.ini),
-                trace = FALSE,
-                nls.control(maxiter = 1000))
-    
-    # Find p-value and pseudo R-squared
-    pseudo_r2 <- nagelkerke(lp_model, null)[2]
-    print(pseudo_r2)
-    
-    # print and set confidence interval
-    confinterval <- confint2(lp_model, level = 0.95)
-    conflo <- round(confinterval[3, 1], 1)
-    confhi <- round(confinterval[3, 2], 1)
-    print("Confidence Interval")
-    print(confinterval)
-    
-    plotNormalHistogram(residuals(lp_model))
-    plot(fitted(lp_model), residuals(lp_model))
-    
-    a  <- coefficients(lp_model)[[1]]
-    b  <- coefficients(lp_model)[[2]]
-    cc <- coefficients(lp_model)[[3]]
-    plateau <- round(a + b * cc, 1)
-    
-    print(paste("Plateau at ", plateau, "% yield"))
-    
-    # ggplot style
-    lp_line <- tibble(x = c(min(data$potassium), cc, max(data$potassium)),
-        y = c(a, a + (b * cc), a + (b * cc)))
-    
-    # other plot
-    data %>%
-      ggplot(aes(x = potassium, y = yield)) +
-      geom_point(size = 1, alpha = 0.5) +
-      geom_rug(alpha = 0.5, length = unit(2, "pt")) +
-      geom_line(data = lp_line, aes(x = x, y = y)) +
-      geom_vline(xintercept = cc,
-                 color = "#CC0000") +
-      geom_vline(
-        xintercept = c(conflo, confhi),
-        color = "#CC0000",
-        alpha = 0.2
-      ) +
-      scale_x_continuous(breaks = seq(0, 1000, 20)) +
-      scale_y_continuous(breaks = seq(0, 200, 5)) +
-      labs(subtitle = paste0("Critical concentraion = ", round(cc, 0),
-        " ppm; 95% CL [", conflo, ", ", confhi, "]"))
+  }
+  m.ini <- mean(data$yield)
+  
+  null <- nls(
+    yield ~ nullfunct(potassium, m),
+    data = data,
+    start = list(m = m.ini),
+    trace = FALSE,
+    nls.control(maxiter = 1000)
+  )
+  
+  # Find p-value and pseudo R-squared
+  pseudo_r2 <- nagelkerke(qp_model, null)[2]
+  print(pseudo_r2)
+  
+  # print and set confidence interval
+  confinterval <- confint2(qp_model, level = 0.95)
+  conflo <- round(confinterval[3, 1], 1)
+  confhi <- round(confinterval[3, 2], 1)
+  print("Confidence Interval")
+  print(confinterval)
+  
+  plotNormalHistogram(residuals(qp_model))
+  plot(fitted(qp_model), residuals(qp_model))
+  
+  a  <- coef(qp_model)[[1]]
+  b  <- coef(qp_model)[[2]]
+  cc <- coef(qp_model)[[3]]
+  quad <- -0.5 * b / cc
+  plateau <- a + b * cc + (-0.5 * b / cc) * cc * cc
+  
+  print(paste("Quad coeff", quad))
+  print(paste("Plateau at ", plateau, "% RY"))
+  
+  # other plot
+  data %>%
+    ggplot(aes(x = potassium, y = yield)) +
+    geom_point(size = 1, alpha = 0.5) +
+    geom_rug(alpha = 0.5, length = unit(2, "pt")) +
+    geom_smooth(method = "nls",
+                formula = y ~ qp(x, a, b, c),
+                method.args = list(start = as.list(coef(qp_model))),
+                se = FALSE,
+                color = "#4156a1",
+                size = 0.5) +
+    geom_vline(xintercept = cc,
+               color = "#CC0000") +
+    geom_vline(
+      xintercept = c(conflo, confhi),
+      color = "#CC0000",
+      alpha = 0.2
+    ) +
+    scale_x_continuous(breaks = seq(0, 1000, 20)) +
+    scale_y_continuous(breaks = seq(0, 200, 5)) +
+    labs(subtitle = paste0(
+      "Critical concentraion = ",
+      round(cc, 0),
+      " ppm; 95% CL [",
+      conflo,
+      ", ",
+      confhi,
+      "]"
+    ))
 }
 ```
 
-# The result
+## The result
 
-So how do you fit a linear-plateau model in R? Like this:
+So how do you fit a quadratic-plateau model in R? Like this:
 
-```{r lp-3}
-lin_plateau(cotton) +
+```{r qp-3}
+quad_plateau(cotton) +
   labs(title = paste(
     "Relative yield and soil potassium for", nrow(cotton), "cotton trials"),
     y = "Relative yield (%)",
     x = "Concentration of Soil Potassium (ppm)")
 ```
 
-The critical soil concentration for potassium appears to be around 75 ppm, though the confidence interval is pretty wide. This is probably due to the lack of data points. The model summary shows that most of the error comes from the the *a* and *c* parameters, essentially the intercept and join-point. The psuedo-R^2^ is about 0.66, so not too bad. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.
+The critical soil concentration for potassium appears to be around 86 ppm, higher than the linear-plateau model. The confidence interval for the join-point is also wider than the "lp" model. The model summary shows that most of the error comes from the the *a* and *c* parameters, essentially the intercept and join-point. The pseudo-R^2^ is about 0.67, so not too bad. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.
 
-Now, what if the two points with "high" STK (\> 180 ppm), were removed? How would that change the analysis? Go back and test yourself[^2]. How do other models compare? Quadratic-plateau? Mitscherlich-Bray?
+Now, what if the two points with "high" STK (\> 180 ppm), were removed? How would that change the analysis? Go back and test yourself[^3]. How do other models compare? Linear-plateau? Mitscherlich-Bray?
 
-[^2]: Hint: `filter()`
-
-------------------------------------------------------------------------
-
-How I [themed my ggplots](https://gradcylinder.org/my-ggplot-theme/).
+[^3]: Hint: `filter()`
