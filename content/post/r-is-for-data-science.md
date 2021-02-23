@@ -1,13 +1,12 @@
 ---
 title: R is for Data Science
-author: Austin Pearce
 date: '2017-12-14'
 slug: r-is-for-data-science
-tags: [R, Data Science, Research]
-header:
-  caption: ''
-  image: ''
-summary: "R is a statistics language that can be used for quite a bit more than finding means."
+tags:
+- R
+- data science
+- research
+description: "R is a statistics language that can be used for quite a bit more than finding means."
 ---
 
 R is a "statistics" language that can be used for quite a bit more than finding means. Quotes surround "statistics" because the [R programming language](https://www.r-project.org/) is really more complete and expansive than for just crunching averages and linear models, for example. R is "*a freely available language and environment for statistical computing and graphics*" and is completely open source.
@@ -24,11 +23,11 @@ RStudio Desktop is free, and can be downloaded [here](https://www.rstudio.com/pr
 
 This subject is still somewhat new to me, but here are some solid resources I'm using:
 
-* [Google's R Style Guide](https://google.github.io/styleguide/Rguide.xml)
-* [Hadley Wickham's Style Guide](http://adv-r.had.co.nz/Style.html)
-* [Sharing R Code - With Style](https://onepager.togaware.com/StyleO.pdf)
-* [Writing Better R Code](https://www.bioconductor.org/help/course-materials/2013/CSAMA2013/friday/afternoon/R-programming.pdf)
-* [Effecient R Programming](https://bookdown.org/csgillespie/efficientR/)
+- [Tidyverse Style Guide](https://style.tidyverse.org/index.html)
+- [Google's R Style Guide](https://google.github.io/styleguide/Rguide.html)
+- [Sharing R Code - With Style](https://onepager.togaware.com/StyleO.pdf)
+- [Writing Better R Code](https://www.bioconductor.org/help/course-materials/2013/CSAMA2013/friday/afternoon/R-programming.pdf)
+- [Effecient R Programming](https://csgillespie.github.io/efficientR/)
 
 ## Packages
 
@@ -57,14 +56,6 @@ I like that the tutorials are run inside the R console. Learning takes on a much
 While R obviously provides plotting capabilities, other packages for plotting data are available, such as [ggplot2](http://ggplot2.tidyverse.org/reference/). There is a `ggplot2` cheatsheet quickly available through RStudio under RStudio > Help > Cheatsheets.
 
 >"ggplot2 is a plotting system for R, based on the grammar of graphics, which tries to take the good parts of base and lattice graphics and none of the bad parts. It takes care of many of the fiddly details that make plotting a hassle (like drawing legends) as well as providing a powerful model of graphics that makes it easy to produce complex multi-layered graphics.
-
-### plotly
-
->Easily translate 'ggplot2' graphs to an interactive web-based version and/or create custom web-based visualizations directly from R. Once uploaded to a 'plotly' account, 'plotly' graphs (and the data behind them) can be viewed and modified in a web browser.
-
-I enjoy using [Plotly](https://plot.ly/) mostly because of its simplicity in creating interactive, web-based graphs, not requiring someone like myself to know JavaScript or other ways to publish interactive graphs. And while I first used plotly through the web browser interface, it turns out that making plotly graphs in R is pretty simple with the [plotly package](https://plot.ly/r/).
-
-But, as the package description indicates, if one is more comfortable making graphs in ggplot2, most of these graphics can easily be converted into interactive plotly graphics using the `ggplotly()` function.
 
 ## Other Packages
 

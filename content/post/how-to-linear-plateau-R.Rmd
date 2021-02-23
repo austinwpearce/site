@@ -1,5 +1,5 @@
 ---
-title: "How to fit linear-plateau model in R"
+title: "How to fit linear-plateau models in R"
 lastmod: "2021-02-19"
 slug: fit-linear-plateau-r
 description: "Agricultureal yields go up, then level off."
@@ -10,6 +10,7 @@ tags:
 - soil testing
 - soil correlation
 - crops
+- R
 ---
 
 The `rcompanion` package is the main reason I figured out how to fit non-linear models to agricultural data. Go [reference it here](https://rcompanion.org/handbook/I_11.html). I'll wait.
@@ -153,7 +154,7 @@ lin_plateau <- function(data) {
     a  <- coefficients(lp_model)[[1]]
     b  <- coefficients(lp_model)[[2]]
     cc <- coefficients(lp_model)[[3]]
-    plateau <- a + b * cc
+    plateau <- round(a + b * cc, 1)
     
     print(paste("Plateau at ", plateau, "% yield"))
     
@@ -201,4 +202,4 @@ Now, what if the two points with "high" STK (\> 180 ppm), were removed? How woul
 
 ------------------------------------------------------------------------
 
-Not that it's important, but here is how I [themed my ggplots](https://gradcylinder.org/my-ggplot-theme/).
+How I [themed my ggplots](https://gradcylinder.org/my-ggplot-theme/).

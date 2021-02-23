@@ -1,11 +1,12 @@
 ---
-title: Tools
+title: Digital Toolbox
 lastmod: "2021-01-29"
-description: A master list of resources and tools that have helped me work.
+description: A master list of digital resources and tools that have helped me work.
 tags:
 - tools
 - software
 - websites
+- data science
 ---
 
 A master list of resources and tools that have helped me work or that I find useful or neat. Installation files are for Windows versions of open-source software mentioned below, but follow the link to the website for Linux or Mac versions.
