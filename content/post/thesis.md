@@ -3,7 +3,8 @@ author: Austin
 date: "2017-06-01"
 description: My master's thesis work in Wallsburg, UT.
 tags:
-- photography
+- water quality
+- phosphorus
 title: Master's Thesis
 slug: thesis
 ---

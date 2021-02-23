@@ -5,6 +5,7 @@ slug: point-zero-charge
 description: "What is the point of this anyways?"
 tags:
 - soil chemistry
+image: "pzc.png"
 ---
 
 If you have your own data, import the data frame into *R* having set the variable names as follows:
@@ -13,7 +14,7 @@ If you have your own data, import the data frame into *R* having set the variabl
   + Anion exchange measurements in the second column as "Anion"
   + Cation exchange measurements in the third (and last) column as "Cation"
 
-Or if you want to use the R code only, just input your PZC data manually into the respective strings (ph, anion, and cation). Make sure to fill out the strings in order of the observations, starting with the first PZC measurement. For this all to work, I might add, your cation exchange values should be positive when recorded, though it'll be treated as negative later during the calculation.
+Or if you want to use the R code only, just input your PZC data manually into the respective strings (ph, anion, and cation). Make sure to fill out the strings in order of the observations, starting with the first PZC measurement. For this all to work, I might add, your cation exchange values will be positive when recorded, but it'll be treated as negative during the calculation.
 
 ```{r setup, message=FALSE}
 # packages
@@ -26,123 +27,97 @@ library(extrafont)
 rc <- c("Roboto Condensed")
 
 # My own ggplot2 theme
-theme_set(
-  theme_minimal(base_family = rc,
-                base_size = 14) +
+theme_gradcylinder <- theme_minimal(base_family = rc,
+                                    base_size = 14) +
     theme(
-      plot.background = NULL,
-      plot.margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "pt"),
-      panel.grid = element_line(color = "#F1F1F1"),
-      panel.border = element_blank(),
-      axis.line = element_blank(),
-      axis.ticks = element_blank(),
-      axis.title.y = element_text(
-        hjust = 1,
-        margin = margin(t = 0, r = 10, b = 0, l = 0, unit = "pt")),
-      axis.title.x = element_text(
-        hjust = 0,
-        margin = margin(t = 10, r = 0, b = 0, l = 0, unit = "pt")),
-      axis.text = element_text(family = rc),
-      legend.title.align = 0,
-      legend.key.height = unit(x = 5, units = "mm"),
-      legend.justification = c(1, 1),
-      legend.position = c(1, 1)
+        plot.background = NULL,
+        plot.margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "pt"),
+        panel.grid = element_line(color = "#F9F9F9"),
+        panel.border = element_blank(),
+        axis.line = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.y = element_text(
+            hjust = 1,
+            margin = margin(t = 0, r = 10, b = 0, l = 0, unit = "pt")),
+        axis.title.x = element_text(
+            hjust = 0,
+            margin = margin(t = 10, r = 0, b = 0, l = 0, unit = "pt")),
+        axis.text = element_text(family = rc),
+        legend.title.align = 0,
+        legend.key.height = unit(x = 5, units = "mm"),
+        legend.justification = c(1, 1),
+        legend.position = c(1, 1)
     )
-)
+
+theme_set(theme_gradcylinder)
 ```
 
 ```{r, data}
-pH <- c(3.2, 3.4, 3.75, 4.1, 4.85, 6.4, 6.7)
-
-Anion <- c(2.6, 2.3, 1.7, 1.4, 0.7, 0.055, 0.052)
-
-Cation <- c(0.76, 0.81, 0.64, 0.71, 1.34, 2.42, 3.31)
-
-# Cation exchange charges are treated negative
-Cation <- -Cation
+data <- tibble(pH    =  c(3.2,  3.4,  3.75, 4.1,  4.85, 6.4,   6.7),
+              Anion  =  c(2.6,  2.3,  1.7,  1.4,  0.7,  0.055, 0.052),
+              Cation = -c(0.76, 0.81, 0.64, 0.71, 1.34, 2.42,  3.31))
 ```
 
 The **net charge** is the difference between the anion and cation charges. Anion exchange capacity has positive net charge. Cation exchange capacity has negative net charge. Once net charge is calculated, arrange the data frames and sort by the net charge in descending order.
 
 ```{r, net-charge-and-data-frames, message=FALSE, warning=FALSE}
-Net <- Anion + Cation
-
-# stitch it all together in a data frame
-df_pzc <- tibble(pH, Anion, Cation, Net) %>% 
+data <- mutate(data, Net = Anion + Cation) %>% 
   arrange(desc(Net))
-
-# long form of the data frame
-df_pzc2 <- tibble(pH, Anion, Cation, Net) %>% 
-  arrange(desc(Net)) %>% 
-  gather(key = "Measure",
-         value = "Value",
-         2:4)
-
-df_pzc2$Measure <- factor(df_pzc2$Measure,
-                           levels = c('Anion', 'Net', 'Cation'))
 ```
 
 This code finds the exact point of zero charge, so that 1) it can be known exactly rather than eye-balling the plot, and 2) it can be plotted.
 
 ```{r, find-pzc}
 # find pzc by calculating slope of line between last positive (AEC) point
-pos <- filter(df_pzc, Net > 0) %>%
+pos <- filter(data, Net > 0) %>%
   select(pH, Net) %>% 
   tail(n = 1)
 
 # and first negative (CEC) point
-neg <- filter(df_pzc, Net < 0) %>%
+neg <- filter(data, Net < 0) %>%
   select(pH, Net) %>% 
   head(n = 1)
 
 # and finding point of x-intercept
-slope <- (neg$Net - pos$Net) / (neg$pH - pos$pH)
-
-pzc <- ((0 - pos$Net) / slope) + pos$pH
+pzc <- ((0 - pos$Net) / ((neg$Net - pos$Net) / (neg$pH - pos$pH))) + pos$pH
 
 pzc_label <- round(pzc, digits = 2)
 
 ```
 
-Make sure the plot scales properly to the first and last pH measurements.
-
-```{r, autoscale-plot}
-ph_first <- head(pH, n = 1)
-
-ph_last <- tail(pH, n = 1)
-```
-
 Then, plot PZC.
 
 ```{r, plot, fig.asp=0.8}
-ggplot(data = df_pzc2,
-       aes(x = pH, y = Value, linetype = Measure)) +
+data %>% 
+  pivot_longer(names_to = "Measure",
+               values_to = "Value",
+               cols = 2:4) %>% 
+  mutate(Measure = factor(Measure, levels = c('Anion', 'Net', 'Cation'))) %>%
+  ggplot(aes(x = pH, y = Value, linetype = Measure)) +
   geom_line() +
-  geom_point(size = 1) +
+  geom_point() +
   # zero line
   geom_hline(yintercept = 0,
              alpha = 0.4) +
   # PZC point
   geom_point(aes(x = pzc, y = 0),
-             color = 'red',
+             color = "#CC0000",
              size = 3,
-             pch = 18) +
+             pch = 1) +
   # annotations for labels
   annotate(geom = 'text',
            label = pzc_label,
            x = pzc + 0.1, y = 0.3,
-           family = "Roboto Condensed") +
+           family = rc) +
   annotate(geom = 'text',
            label = "AEC +",
-           x = pH[[2]], y = 0.2,
-           family = "Roboto Condensed") +
+           x = min(data$pH), y = 0.2,
+           family = rc) +
   annotate(geom = 'text',
            label = "CEC -",
-           x = pH[[2]], y = -0.2,
-           family = "Roboto Condensed") +
-  scale_x_continuous(breaks = seq(from = ph_first,
-                                  to = ph_last,
-                                  by = (ph_last - ph_first))) +
+           x = min(data$pH), y = -0.2,
+           family = rc) +
+  scale_x_continuous(breaks = seq(0, 14, 0.5)) +
   scale_linetype_manual(values = c(2, 1, 3)) +
   labs(title = "Point of Zero Charge",
        x = "pH",

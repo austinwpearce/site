@@ -15,91 +15,66 @@ theme_set(
 # Manual Method ---------------------------------------------------------------
 # start by typing in all values, in order obviously
 # this must be done first
-ph <- c(3.2, 3.4, 3.75, 4.1, 4.85, 6.4, 6.7)
-
-anion <- c(2.6, 2.3, 1.7, 1.4, 0.7, 0.055, 0.052)
-
-cation <- c(0.76, 0.81, 0.64, 0.71, 1.34, 2.42, 3.31)
-
-# For scaling the plot later on, grab the first and last pH values
-ph.first <- head(ph, n = 1)
-
-ph.last <- tail(ph, n = 1)
-
-# net charge is the difference between the anion and cation -------------------
-# note that there is a positive net charge for AEC
-# and negative net charge for CEC
-net <- anion - cation
-
-# stitch it all together in a data frame --------------------------------------
-df.pzc <- tibble(ph, anion, cation, net) %>% 
-  arrange(., desc(net))
-
-# long form of the data frame
-df.pzc2 <- tibble(ph, anion, -cation, net) %>% 
-  arrange(desc(net)) %>% 
-  gather(key = "measure",
-         value = "value",
-         2:4)
-
-df.pzc2$measure2 <- factor(df.pzc2$measure,
-                  levels = c("anion", "net", "-cation"))
+data <- tibble(pH    =  c(3.2,  3.4,  3.75, 4.1,  4.85, 6.4,   6.7),
+               Anion  =  c(2.6,  2.3,  1.7,  1.4,  0.7,  0.055, 0.052),
+               Cation = -c(0.76, 0.81, 0.64, 0.71, 1.34, 2.42,  3.31)) %>% 
+  mutate(Net = Anion + Cation) %>% 
+  arrange(desc(Net))
 
 # Find PZC --------------------------------------------------------------------
 # find pzc by calculating slope of line between last positive (AEC) point
-pos <- filter(df.pzc, net > 0) %>%
-  select(ph, net) %>% 
+pos <- filter(data, Net > 0) %>%
+  select(pH, Net) %>% 
   tail(n = 1)
 
 # and first negative (CEC) point
-neg <- filter(df.pzc, net < 0) %>%
-  select(ph, net) %>% 
+neg <- filter(data, Net < 0) %>%
+  select(pH, Net) %>% 
   head(n = 1)
 
 # and finding point of x-intercept
-slope <- (neg$net - pos$net) / (neg$ph - pos$ph)
+pzc <- ((0 - pos$Net) / ((neg$Net - pos$Net) / (neg$pH - pos$pH))) + pos$pH
 
-pzc <- ((0 - pos$net) / slope) + pos$ph
-
-pzc.label <- round(pzc, digits = 2)
+pzc_label <- round(pzc, digits = 2)
 
 # Plot 1 -----------------------------------------------------------------------
 # code for plot with net charge line going through pH axis.
 # Where net charge equals zero, that is Point of Zero Charge at the observed pH.
 # I know the code is long, but whatever
-ggplot(data = df.pzc2,
-       aes(x = ph, y = value, linetype = measure2)) +
+data %>% 
+  pivot_longer(names_to = "Measure",
+               values_to = "Value",
+               cols = 2:4) %>% 
+  mutate(Measure = factor(Measure, levels = c('Anion', 'Net', 'Cation'))) %>%
+  ggplot(aes(x = pH, y = Value, linetype = Measure)) +
   geom_line() +
-  geom_point(size = 1) +
+  geom_point() +
   # zero line
   geom_hline(yintercept = 0,
              alpha = 0.4) +
   # PZC point
   geom_point(aes(x = pzc, y = 0),
-             color = "red",
+             color = "#CC0000",
              size = 3,
-             pch = 18) +
+             pch = 1) +
   # annotations for labels
-  annotate(geom = "text",
-           label = pzc.label,
+  annotate(geom = 'text',
+           label = pzc_label,
            x = pzc + 0.1, y = 0.3,
-           family = "Roboto Condensed") +
-  annotate(geom = "text",
-           label = "AEC",
-           x = ph[[2]], y = 0.2,
-           family = "Roboto Condensed") +
-  annotate(geom = "text",
-           label = "CEC",
-           x = ph[[2]], y = -0.2,
-           family = "Roboto Condensed") +
-  scale_x_continuous(breaks = seq(from = ph.first,
-                                  to = ph.last,
-                                  by = (ph.last - ph.first))) +
-  scale_linetype_manual(values = c(2, 1, 3),
-                        labels = c("Anion", "Net Charge", "Cation")) +
+           family = rc) +
+  annotate(geom = 'text',
+           label = "AEC +",
+           x = min(data$pH), y = 0.2,
+           family = rc) +
+  annotate(geom = 'text',
+           label = "CEC -",
+           x = min(data$pH), y = -0.2,
+           family = rc) +
+  scale_x_continuous(breaks = seq(0, 14, 0.5)) +
+  scale_linetype_manual(values = c(2, 1, 3)) +
   labs(title = "Point of Zero Charge",
        x = "pH",
        y = "Net Charge",
        linetype = NULL)
 
-# ggsave(filename = "pzc.png", dpi = 300, height = 5, width = 7)
+ggsave("static/pzc.png", dpi = 300, height = 5, width = 7)

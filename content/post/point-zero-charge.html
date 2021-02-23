@@ -1,10 +1,11 @@
 ---
-title: "Finding the Point of Zero Charge in R"
+title: "How to find the point of zero charge in R"
 lastmod: "2021-01-29"
 slug: point-zero-charge
 description: "What is the point of this anyways?"
 tags:
 - soil chemistry
+image: "pzc.png"
 ---
 
 <script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
@@ -16,81 +17,61 @@ tags:
 <li>Anion exchange measurements in the second column as “Anion”</li>
 <li>Cation exchange measurements in the third (and last) column as “Cation”</li>
 </ul>
-<p>Or if you want to use the R code only, just input your PZC data manually into the respective strings (ph, anion, and cation). Make sure to fill out the strings in order of the observations, starting with the first PZC measurement. For this all to work, I might add, your cation exchange values should be positive when recorded, though it’ll be treated as negative later during the calculation.</p>
-<pre class="r"><code>pH &lt;- c(3.2, 3.4, 3.75, 4.1, 4.85, 6.4, 6.7)
-
-Anion &lt;- c(2.6, 2.3, 1.7, 1.4, 0.7, 0.055, 0.052)
-
-Cation &lt;- c(0.76, 0.81, 0.64, 0.71, 1.34, 2.42, 3.31)
-
-# Cation exchange charges are treated negative
-Cation &lt;- -Cation</code></pre>
+<p>Or if you want to use the R code only, just input your PZC data manually into the respective strings (ph, anion, and cation). Make sure to fill out the strings in order of the observations, starting with the first PZC measurement. For this all to work, I might add, your cation exchange values will be positive when recorded, but it’ll be treated as negative during the calculation.</p>
+<pre class="r"><code># packages
+library(tidyverse)</code></pre>
+<pre class="r"><code>data &lt;- tibble(pH    =  c(3.2,  3.4,  3.75, 4.1,  4.85, 6.4,   6.7),
+              Anion  =  c(2.6,  2.3,  1.7,  1.4,  0.7,  0.055, 0.052),
+              Cation = -c(0.76, 0.81, 0.64, 0.71, 1.34, 2.42,  3.31))</code></pre>
 <p>The <strong>net charge</strong> is the difference between the anion and cation charges. Anion exchange capacity has positive net charge. Cation exchange capacity has negative net charge. Once net charge is calculated, arrange the data frames and sort by the net charge in descending order.</p>
-<pre class="r"><code>Net &lt;- Anion + Cation
-
-# stitch it all together in a data frame
-df_pzc &lt;- tibble(pH, Anion, Cation, Net) %&gt;% 
-  arrange(desc(Net))
-
-# long form of the data frame
-df_pzc2 &lt;- tibble(pH, Anion, Cation, Net) %&gt;% 
-  arrange(desc(Net)) %&gt;% 
-  gather(key = &quot;Measure&quot;,
-         value = &quot;Value&quot;,
-         2:4)
-
-df_pzc2$Measure &lt;- factor(df_pzc2$Measure,
-                           levels = c(&#39;Anion&#39;, &#39;Net&#39;, &#39;Cation&#39;))</code></pre>
+<pre class="r"><code>data &lt;- mutate(data, Net = Anion + Cation) %&gt;% 
+  arrange(desc(Net))</code></pre>
 <p>This code finds the exact point of zero charge, so that 1) it can be known exactly rather than eye-balling the plot, and 2) it can be plotted.</p>
 <pre class="r"><code># find pzc by calculating slope of line between last positive (AEC) point
-pos &lt;- filter(df_pzc, Net &gt; 0) %&gt;%
+pos &lt;- filter(data, Net &gt; 0) %&gt;%
   select(pH, Net) %&gt;% 
   tail(n = 1)
 
 # and first negative (CEC) point
-neg &lt;- filter(df_pzc, Net &lt; 0) %&gt;%
+neg &lt;- filter(data, Net &lt; 0) %&gt;%
   select(pH, Net) %&gt;% 
   head(n = 1)
 
 # and finding point of x-intercept
-slope &lt;- (neg$Net - pos$Net) / (neg$pH - pos$pH)
-
-pzc &lt;- ((0 - pos$Net) / slope) + pos$pH
+pzc &lt;- ((0 - pos$Net) / ((neg$Net - pos$Net) / (neg$pH - pos$pH))) + pos$pH
 
 pzc_label &lt;- round(pzc, digits = 2)</code></pre>
-<p>Make sure the plot scales properly to the first and last pH measurements.</p>
-<pre class="r"><code>ph_first &lt;- head(pH, n = 1)
-
-ph_last &lt;- tail(pH, n = 1)</code></pre>
 <p>Then, plot PZC.</p>
-<pre class="r"><code>ggplot(data = df_pzc2,
-       aes(x = pH, y = Value, linetype = Measure)) +
+<pre class="r"><code>data %&gt;% 
+  pivot_longer(names_to = &quot;Measure&quot;,
+               values_to = &quot;Value&quot;,
+               cols = 2:4) %&gt;% 
+  mutate(Measure = factor(Measure, levels = c(&#39;Anion&#39;, &#39;Net&#39;, &#39;Cation&#39;))) %&gt;%
+  ggplot(aes(x = pH, y = Value, linetype = Measure)) +
   geom_line() +
-  geom_point(size = 1) +
+  geom_point() +
   # zero line
   geom_hline(yintercept = 0,
              alpha = 0.4) +
   # PZC point
   geom_point(aes(x = pzc, y = 0),
-             color = &#39;red&#39;,
+             color = &quot;#CC0000&quot;,
              size = 3,
-             pch = 18) +
+             pch = 1) +
   # annotations for labels
   annotate(geom = &#39;text&#39;,
            label = pzc_label,
            x = pzc + 0.1, y = 0.3,
-           family = &quot;Roboto Condensed&quot;) +
+           family = rc) +
   annotate(geom = &#39;text&#39;,
            label = &quot;AEC +&quot;,
-           x = pH[[2]], y = 0.2,
-           family = &quot;Roboto Condensed&quot;) +
+           x = min(data$pH), y = 0.2,
+           family = rc) +
   annotate(geom = &#39;text&#39;,
            label = &quot;CEC -&quot;,
-           x = pH[[2]], y = -0.2,
-           family = &quot;Roboto Condensed&quot;) +
-  scale_x_continuous(breaks = seq(from = ph_first,
-                                  to = ph_last,
-                                  by = (ph_last - ph_first))) +
+           x = min(data$pH), y = -0.2,
+           family = rc) +
+  scale_x_continuous(breaks = seq(0, 14, 0.5)) +
   scale_linetype_manual(values = c(2, 1, 3)) +
   labs(title = &quot;Point of Zero Charge&quot;,
        x = &quot;pH&quot;,

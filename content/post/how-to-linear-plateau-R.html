@@ -11,6 +11,7 @@ tags:
 - soil correlation
 - crops
 - R
+image: "linear-plateau.png"
 editor_options: 
   chunk_output_type: console
 ---
@@ -180,6 +181,8 @@ lin_plateau &lt;- function(data) {
 <p><img src="/post/how-to-linear-plateau-R_files/figure-html/lp-3-1.png" width="672" /><img src="/post/how-to-linear-plateau-R_files/figure-html/lp-3-2.png" width="672" /></p>
 <pre><code>## [1] &quot;Plateau at  95.5 % yield&quot;</code></pre>
 <p><img src="/post/how-to-linear-plateau-R_files/figure-html/lp-3-3.png" width="672" /></p>
+<pre class="r"><code>ggsave(&quot;static/linear-plateau.png&quot;,
+       dpi = 300, width = 7, height = 5)</code></pre>
 <p>The critical soil concentration for potassium appears to be around 75 ppm, though the confidence interval is pretty wide. This is probably due to the lack of data points. The model summary shows that most of the error comes from the the <em>a</em> and <em>c</em> parameters, essentially the intercept and join-point. The psuedo-R<sup>2</sup> is about 0.66, so not too bad. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.</p>
 <p>Now, what if the two points with “high” STK (&gt; 180 ppm), were removed? How would that change the analysis? Go back and test yourself<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>. How do other models compare? <a href="https://gradcylinder.org/quad-plateau/">Quadratic-plateau</a>? Mitscherlich-Bray?</p>
 </div>
