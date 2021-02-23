@@ -114,8 +114,8 @@ Below is my big function to fit it, get some useful numbers, and plot it. I'm no
 lin_plateau <- function(data) {
     # initial values
     ini_fit <- lm(data = data, formula = yield ~ potassium)
-    ini_a <- ini_fit$coefficients[[1]]
-    ini_b <- ini_fit$coefficients[[2]]
+    ini_a <- ini_fit$coef[[1]]
+    ini_b <- ini_fit$coef[[2]]
     ini_c <- mean(data$potassium)
     
     # linear plateau model
@@ -153,23 +153,18 @@ lin_plateau <- function(data) {
     plotNormalHistogram(residuals(lp_model))
     plot(fitted(lp_model), residuals(lp_model))
     
-    a  <- coefficients(lp_model)[[1]]
-    b  <- coefficients(lp_model)[[2]]
-    cc <- coefficients(lp_model)[[3]]
+    a  <- coef(lp_model)[[1]]
+    b  <- coef(lp_model)[[2]]
+    cc <- coef(lp_model)[[3]]
     plateau <- round(a + b * cc, 1)
     
     print(paste("Plateau at ", plateau, "% yield"))
-    
-    # ggplot style
-    lp_line <- tibble(x = c(min(data$potassium), cc, max(data$potassium)),
-        y = c(a, a + (b * cc), a + (b * cc)))
     
     # other plot
     data %>%
       ggplot(aes(x = potassium, y = yield)) +
       geom_point(size = 1, alpha = 0.5) +
       geom_rug(alpha = 0.5, length = unit(2, "pt")) +
-      geom_line(data = lp_line, aes(x = x, y = y)) +
       geom_vline(xintercept = cc,
                  color = "#CC0000") +
       geom_vline(
@@ -177,6 +172,12 @@ lin_plateau <- function(data) {
         color = "#CC0000",
         alpha = 0.2
       ) +
+      geom_smooth(method = "nlsLM",
+                formula = y ~ lp(x, a, b, c),
+                method.args = list(start = as.list(coef(lp_model))),
+                se = FALSE,
+                color = "#4156a1",
+                size = 0.5) +
       scale_x_continuous(breaks = seq(0, 1000, 20)) +
       scale_y_continuous(breaks = seq(0, 200, 5)) +
       labs(subtitle = paste0("Critical concentraion = ", round(cc, 0),

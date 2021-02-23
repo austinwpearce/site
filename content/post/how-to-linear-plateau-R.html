@@ -72,8 +72,8 @@ lp &lt;- function(x, a, b, c) {
 lin_plateau &lt;- function(data) {
     # initial values
     ini_fit &lt;- lm(data = data, formula = yield ~ potassium)
-    ini_a &lt;- ini_fit$coefficients[[1]]
-    ini_b &lt;- ini_fit$coefficients[[2]]
+    ini_a &lt;- ini_fit$coef[[1]]
+    ini_b &lt;- ini_fit$coef[[2]]
     ini_c &lt;- mean(data$potassium)
     
     # linear plateau model
@@ -111,23 +111,18 @@ lin_plateau &lt;- function(data) {
     plotNormalHistogram(residuals(lp_model))
     plot(fitted(lp_model), residuals(lp_model))
     
-    a  &lt;- coefficients(lp_model)[[1]]
-    b  &lt;- coefficients(lp_model)[[2]]
-    cc &lt;- coefficients(lp_model)[[3]]
+    a  &lt;- coef(lp_model)[[1]]
+    b  &lt;- coef(lp_model)[[2]]
+    cc &lt;- coef(lp_model)[[3]]
     plateau &lt;- round(a + b * cc, 1)
     
     print(paste(&quot;Plateau at &quot;, plateau, &quot;% yield&quot;))
-    
-    # ggplot style
-    lp_line &lt;- tibble(x = c(min(data$potassium), cc, max(data$potassium)),
-        y = c(a, a + (b * cc), a + (b * cc)))
     
     # other plot
     data %&gt;%
       ggplot(aes(x = potassium, y = yield)) +
       geom_point(size = 1, alpha = 0.5) +
       geom_rug(alpha = 0.5, length = unit(2, &quot;pt&quot;)) +
-      geom_line(data = lp_line, aes(x = x, y = y)) +
       geom_vline(xintercept = cc,
                  color = &quot;#CC0000&quot;) +
       geom_vline(
@@ -135,6 +130,12 @@ lin_plateau &lt;- function(data) {
         color = &quot;#CC0000&quot;,
         alpha = 0.2
       ) +
+      geom_smooth(method = &quot;nlsLM&quot;,
+                formula = y ~ lp(x, a, b, c),
+                method.args = list(start = as.list(coef(lp_model))),
+                se = FALSE,
+                color = &quot;#4156a1&quot;,
+                size = 0.5) +
       scale_x_continuous(breaks = seq(0, 1000, 20)) +
       scale_y_continuous(breaks = seq(0, 200, 5)) +
       labs(subtitle = paste0(&quot;Critical concentraion = &quot;, round(cc, 0),

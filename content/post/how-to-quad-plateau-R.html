@@ -128,12 +128,6 @@ quad_plateau &lt;- function(data) {
     ggplot(aes(x = potassium, y = yield)) +
     geom_point(size = 1, alpha = 0.5) +
     geom_rug(alpha = 0.5, length = unit(2, &quot;pt&quot;)) +
-    geom_smooth(method = &quot;nls&quot;,
-                formula = y ~ qp(x, a, b, c),
-                method.args = list(start = as.list(coef(qp_model))),
-                se = FALSE,
-                color = &quot;#4156a1&quot;,
-                size = 0.5) +
     geom_vline(xintercept = cc,
                color = &quot;#CC0000&quot;) +
     geom_vline(
@@ -141,6 +135,12 @@ quad_plateau &lt;- function(data) {
       color = &quot;#CC0000&quot;,
       alpha = 0.2
     ) +
+    geom_smooth(method = &quot;nlsLM&quot;,
+                formula = y ~ qp(x, a, b, c),
+                method.args = list(start = as.list(coef(qp_model))),
+                se = FALSE,
+                color = &quot;#4156a1&quot;,
+                size = 0.5) +
     scale_x_continuous(breaks = seq(0, 1000, 20)) +
     scale_y_continuous(breaks = seq(0, 200, 5)) +
     labs(subtitle = paste0(
