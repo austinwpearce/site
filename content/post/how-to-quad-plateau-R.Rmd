@@ -1,8 +1,8 @@
 ---
-title: "How to fit linear-plateau models in R"
-lastmod: "2021-02-19"
-slug: linear-plateau
-description: "Agricultural yields go up a line, then level off."
+title: "How to fit quadratic-plateau models in R"
+lastmod: "2021-02-22"
+slug: quad-plateau
+description: "Agricultural yields go up a curve, then level off."
 tags:
 - statistics
 - modeling

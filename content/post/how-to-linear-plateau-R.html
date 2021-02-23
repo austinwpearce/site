@@ -1,8 +1,8 @@
 ---
 title: "How to fit linear-plateau models in R"
 lastmod: "2021-02-19"
-slug: fit-linear-plateau-r
-description: "Agricultureal yields go up, then level off."
+slug: linear-plateau
+description: "Agricultural yields go up, then level off."
 tags:
 - statistics
 - modeling
@@ -11,6 +11,8 @@ tags:
 - soil correlation
 - crops
 - R
+editor_options: 
+  chunk_output_type: console
 ---
 
 <script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
@@ -49,8 +51,8 @@ lp &lt;- function(x, a, b, c) {
 <p>This function says that up until some join-point, the relationship is linear, after which the stick breaks and it is a flat line (plateau). Sometimes this model is called <em>broken-stick</em> or <em>linear-plus-plateau</em>. That join-point is important; it represents a critical concentration for the nutrient in the soil.</p>
 <p>Below is my big function to fit it, get some useful numbers, and plot it. I’m not a function wizard, but I’m trying, so forgive any poor coding practices. That’s why in my function, I’ve just put in the variables <code>yield</code> and <code>potassium</code>,</p>
 </div>
-<div id="what-is-going-on-in-this-function" class="section level1">
-<h1>What is going on in this ‘function’?</h1>
+<div id="what-is-going-on-in-the-following-function" class="section level1">
+<h1>What is going on in the following ‘function’?</h1>
 <ol style="list-style-type: decimal">
 <li>Get initial values for the <code>nlsLM()</code> function coming up.</li>
 </ol>
