@@ -11,7 +11,7 @@ tags:
 - soil correlation
 - crops
 - R
-image: "linear-plateau.png"
+image: "/linear-plateau.png"
 editor_options: 
   chunk_output_type: console
 ---

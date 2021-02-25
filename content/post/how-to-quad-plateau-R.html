@@ -11,6 +11,7 @@ tags:
 - soil correlation
 - crops
 - R
+image: "/quad-plateau.png"
 editor_options: 
   chunk_output_type: console
 ---
@@ -193,6 +194,8 @@ quad_plateau &lt;- function(data) {
 <pre><code>## [1] &quot;Quad coeff -0.0110933140978919&quot;
 ## [1] &quot;Plateau at  95.2872743265962 % RY&quot;</code></pre>
 <p><img src="/post/how-to-quad-plateau-R_files/figure-html/qp-3-3.png" width="672" /></p>
+<pre class="r"><code>ggsave(&quot;static/quad-plateau.png&quot;, dpi = 300, width = 7, height = 5)</code></pre>
+<p>```</p>
 <p>The critical soil concentration for potassium appears to be around 86 ppm, higher than the linear-plateau model. The confidence interval for the join-point is also wider than the “lp” model. The model summary shows that most of the error comes from the the <em>a</em> and <em>c</em> parameters, essentially the intercept and join-point. The pseudo-R<sup>2</sup> is about 0.67, so not too bad. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.</p>
 <p>Now, what if the two points with “high” STK (&gt; 180 ppm), were removed? How would that change the analysis? Go back and test yourself<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>. How do other models compare? Linear-plateau? Mitscherlich-Bray?</p>
 </div>

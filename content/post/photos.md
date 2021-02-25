@@ -8,48 +8,48 @@ title: Photos
 slug: photos
 ---
 
-![](/photo_01.jpg)
+![](/photo-01.jpg)
 
-![](/photo_02.jpg)
+![](/photo-02.jpg)
 
-![](/photo_03.jpg)
+![](/photo-03.jpg)
 
-![](/photo_04.jpg)
+![](/photo-04.jpg)
 
-![](/photo_05.jpg)
+![](/photo-05.jpg)
 
-![](/photo_06.jpg)
+![](/photo-06.jpg)
 
-![](/photo_07.jpg)
+![](/photo-07.jpg)
 
-![](/photo_08.jpg)
+![](/photo-08.jpg)
 
-![](/photo_09.jpg)
+![](/photo-09.jpg)
 
-![](/photo_10.jpg)
+![](/photo-10.jpg)
 
-![](/photo_11.jpg)
+![](/photo-11.jpg)
 
-![](/photo_12.jpg)
+![](/photo-12.jpg)
 
-![](/photo_13.jpg)
+![](/photo-13.jpg)
 
-![](/photo_14.jpg)
+![](/photo-14.jpg)
 
-![](/photo_15.jpg)
+![](/photo-15.jpg)
 
-![](/photo_16.jpg)
+![](/photo-16.jpg)
 
-![](/photo_17.jpg)
+![](/photo-17.jpg)
 
-![](/photo_18.jpg)
+![](/photo-18.jpg)
 
-![](/photo_19.jpg)
+![](/photo-19.jpg)
 
-![](/photo_20.jpg)
+![](/photo-20.jpg)
 
-![](/photo_21.jpg)
+![](/photo-21.jpg)
 
-![](/photo_22.jpg)
+![](/photo-22.jpg)
 
 Did you notice any pattern that ties together the photographs?

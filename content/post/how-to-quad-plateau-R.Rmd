@@ -11,6 +11,7 @@ tags:
 - soil correlation
 - crops
 - R
+image: "/quad-plateau.png"
 editor_options: 
   chunk_output_type: console
 ---
@@ -210,6 +211,12 @@ quad_plateau(cotton) +
     "Relative yield and soil potassium for", nrow(cotton), "cotton trials"),
     y = "Relative yield (%)",
     x = "Concentration of Soil Potassium (ppm)")
+```
+
+
+```{r save, eval=FALSE}
+ggsave("static/quad-plateau.png", dpi = 300, width = 7, height = 5)
+```
 ```
 
 The critical soil concentration for potassium appears to be around 86 ppm, higher than the linear-plateau model. The confidence interval for the join-point is also wider than the "lp" model. The model summary shows that most of the error comes from the the *a* and *c* parameters, essentially the intercept and join-point. The pseudo-R^2^ is about 0.67, so not too bad. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.
