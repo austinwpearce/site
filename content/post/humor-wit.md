@@ -1,18 +1,22 @@
 ---
-title: Humor
+title: Humor and Wit
 date: '2020-01-11'
 slug: humor
-tags: [Comics, Humor, Illustration]
+tags:
+- comics
+- humor
+- illustration
 description: "These comics, jokes, and memes make me laugh."
+image: "/i-dont-mind-sherbert.jpg"
 ---
 
-Favorite comics include:
+# Favorite comics
 
 + [XKCD](https://xkcd.com/) by Randall Munroe
 + [PhD Comics](https://phdcomics.com) by Jorge Chan
 
 
-# XKCD
+## XKCD
 
 ![](https://imgs.xkcd.com/comics/laptop_issues.png)
 
@@ -26,7 +30,7 @@ I'm glad I don't work in IT. I do pride myself in being able to keep a good mach
 
 ![](https://imgs.xkcd.com/comics/impostor_syndrome.png)
 
-# PhD Comics
+## PhD Comics
 
 ![](https://phdcomics.com/comics/archive/phd072718s.gif)
 
@@ -42,4 +46,4 @@ This series of comics from PhD Comics starts [here](http://phdcomics.com/comics/
 
 # My own
 
-![](/i_dont_mind_sherbert.jpg)
+![](/i-dont-mind-sherbert.jpg)
