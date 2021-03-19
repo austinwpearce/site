@@ -68,10 +68,11 @@ theme_set(theme_gradcylinder)
 The data is from some cotton trials in the `agridat` package. Basically, more potassium measured in the soil should correlate to more cotton yield, but the relationship will not be linear. Fitting a model to determine something about this relationship is central to the soil-test correlation process. Let's plot it.
 
 ```{r data}
-cotton <- agridat::cate.potassium
+cotton <- tibble(potassium = agridat::cate.potassium$potassium,
+                 yield = agridat::cate.potassium$yield)
 
 cotton %>% 
-  ggplot(aes(x = potassium, y = yield)) +
+  ggplot(aes(potassium, yield)) +
   geom_point(size = 1, alpha = 0.5) +
   geom_rug(alpha = 0.5, length = unit(2, "pt")) +
   scale_x_continuous(breaks = seq(0, 1000, 20)) +
@@ -114,90 +115,110 @@ Below is my big function to fit it, get some useful numbers, and plot it. I'm no
 [^2]: `nlsLM()` is more reliabel overall than plain `nls()`. I've had pretty good luck with nls(), but sometimes it fails. `nlsLM()` seems to fail less. You can test their similarity by using *a*, *b*, *c* coefficients in the output of `nlsLM()` as inputs to `nls()`.
 
 ```{r qp-2}
-# run model and graph all in one!
-quad_plateau <- function(data) {
-  # initial values
-  ini_fit <- lm(data = data, formula = yield ~ potassium)
-  ini_a <- ini_fit$coefficients[[1]]
-  ini_b <- ini_fit$coefficients[[2]]
-  ini_c <- mean(data$potassium)
-  
-  # linear plateau model
-  qp_model <<- nlsLM(
-    formula = yield ~ qp(potassium, a, b, c),
-    data = data,
-    start = list(a = ini_a, b = ini_c, c = ini_c)
-  )
-  
-  print(summary(qp_model))
-  
-  
-  # Define null model
-  nullfunct <- function(x, m) {
+quad_plateau <- function(data, confidence = 90, plot = TRUE) {
+    # initial values
+    ini_fit <- lm(yield ~ potassium, data = data)
+    ini_a <- ini_fit$coef[[1]]
+    ini_b <- ini_fit$coef[[2]]
+    ini_c <- mean(data$potassium)
+    
+    
+    # linear plateau model
+    corr_model <<- nlsLM(
+            formula = yield ~ qp(potassium, a, b, c),
+            data = data,
+            start = list(a = ini_a, b = ini_c, c = ini_c)
+        )
+    
+    # Define null model
+    nullfunct <- function(x, m) {
     m
-  }
-  m.ini <- mean(data$yield)
-  
-  null <- nls(
-    yield ~ nullfunct(potassium, m),
-    data = data,
-    start = list(m = m.ini),
-    trace = FALSE,
-    nls.control(maxiter = 1000)
-  )
-  
-  # Find p-value and pseudo R-squared
-  pseudo_r2 <- nagelkerke(qp_model, null)[2]
-  print(pseudo_r2)
-  
-  # print and set confidence interval
-  confinterval <- confint2(qp_model, level = 0.95)
-  conflo <- round(confinterval[3, 1], 1)
-  confhi <- round(confinterval[3, 2], 1)
-  print("Confidence Interval")
-  print(confinterval)
-  
-  plotNormalHistogram(residuals(qp_model))
-  plot(fitted(qp_model), residuals(qp_model))
-  
-  a  <- coef(qp_model)[[1]]
-  b  <- coef(qp_model)[[2]]
-  cc <- coef(qp_model)[[3]]
-  quad <- -0.5 * b / cc
-  plateau <- a + b * cc + (-0.5 * b / cc) * cc * cc
-  
-  print(paste("Quad coeff", quad))
-  print(paste("Plateau at ", plateau, "% RY"))
-  
-  # other plot
-  data %>%
-    ggplot(aes(x = potassium, y = yield)) +
-    geom_point(size = 1, alpha = 0.5) +
-    geom_rug(alpha = 0.5, length = unit(2, "pt")) +
-    geom_vline(xintercept = cc,
-               color = "#CC0000") +
-    geom_vline(
-      xintercept = c(conflo, confhi),
-      color = "#CC0000",
-      alpha = 0.2
-    ) +
-    geom_smooth(method = "nlsLM",
-                formula = y ~ qp(x, a, b, c),
-                method.args = list(start = as.list(coef(qp_model))),
-                se = FALSE,
-                color = "#4156a1",
-                size = 0.5) +
-    scale_x_continuous(breaks = seq(0, 1000, 20)) +
-    scale_y_continuous(breaks = seq(0, 200, 5)) +
-    labs(subtitle = paste0(
-      "Critical concentraion = ",
-      round(cc, 0),
-      " ppm; 95% CL [",
-      conflo,
-      ", ",
-      confhi,
-      "]"
-    ))
+    }
+    
+    m.ini <- mean(data$potassium)
+    
+    null <- nls(yield ~ nullfunct(potassium, m),
+                data = data,
+                start = list(m = m.ini),
+                trace = FALSE,
+                nls.control(maxiter = 1000))
+    
+    # Find p-value and pseudo R-squared
+    pseudo_r2 <- nagelkerke(corr_model, null)
+    
+    # print and set confidence interval
+    ci <- confint2(corr_model, level = (confidence / 100))
+    cil <- round(ci[3, 1], 1)
+    cih <- round(ci[3, 2], 1)
+    
+    # check residuals
+    par(mfrow = c(2, 2))
+    plotNormalHistogram(residuals(corr_model))
+    plot(fitted(corr_model), residuals(corr_model))
+    par(mfrow = c(1, 1))
+    
+    # get model coefficients back for plotting
+    mod_a  <- coef(corr_model)[[1]]
+    mod_b  <- coef(corr_model)[[2]]
+    mod_c <- coef(corr_model)[[3]]
+    curve_qp <- -0.5 * mod_b / mod_c
+    plateau_qp <-
+        mod_a + mod_b * mod_c + (-0.5 * mod_b / mod_c) * mod_c * mod_c
+    
+    # Printout
+    print("==========Pseudo-R-squared==========")
+    print(pseudo_r2$Pseudo.R.squared.for.model.vs.null)
+    print("==========Model Summary==========")
+    print(summary(corr_model))
+    print("==========Equation==========")
+    print(paste(round(mod_a, 2),"+",
+                round(mod_b, 2),
+                "x",
+                "+",
+                round(mod_c, 2),
+                "x^2"))
+    print("==========Confidence Intervals==========")
+    print(ci)
+    print(paste("Quad coefficient", round(curve_qp, 4)))
+    print(paste("Quadratic-plateau at ", round(plateau_qp, 1), "% RY"))
+
+    if (plot == TRUE)
+      data %>%
+      ggplot(aes(potassium, yield)) +
+      geom_point(size = 1, alpha = 0.5) +
+      geom_rug(alpha = 0.5, length = unit(2, "pt")) +
+      geom_vline(xintercept = mod_c,
+                 color = "#CC0000") +
+      geom_vline(
+        xintercept = c(cil, cih),
+        color = "#CC0000",
+        alpha = 0.2
+      ) +
+      geom_smooth(
+        method = "nlsLM",
+        formula = y ~ qp(x, a, b, c),
+        method.args = list(start = as.list(coef(corr_model))),
+        se = FALSE,
+        color = "#4156a1",
+        size = 0.5
+      ) +
+      scale_x_continuous(breaks = seq(0, 1000, 20)) +
+      scale_y_continuous(breaks = seq(0, 200, 5)) +
+      labs(
+        caption = paste("Each point is a site-year. n =", nrow(data)),
+        subtitle = paste0(
+          "Plateau =",
+          round(plateau_qp, 1),
+          "% RY.  ",
+          "Critical concentraion = ",
+          round(mod_c, 0),
+          " ppm with a", confidence,"% CI [",
+          cil,
+          ", ",
+          cih,
+          "]"
+        )
+      )
 }
 ```
 

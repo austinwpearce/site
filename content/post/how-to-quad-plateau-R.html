@@ -30,10 +30,11 @@ library(agridat)</code></pre>
 <div id="the-data" class="section level2">
 <h2>The data</h2>
 <p>The data is from some cotton trials in the <code>agridat</code> package. Basically, more potassium measured in the soil should correlate to more cotton yield, but the relationship will not be linear. Fitting a model to determine something about this relationship is central to the soil-test correlation process. Let’s plot it.</p>
-<pre class="r"><code>cotton &lt;- agridat::cate.potassium
+<pre class="r"><code>cotton &lt;- tibble(potassium = agridat::cate.potassium$potassium,
+                 yield = agridat::cate.potassium$yield)
 
 cotton %&gt;% 
-  ggplot(aes(x = potassium, y = yield)) +
+  ggplot(aes(potassium, yield)) +
   geom_point(size = 1, alpha = 0.5) +
   geom_rug(alpha = 0.5, length = unit(2, &quot;pt&quot;)) +
   scale_x_continuous(breaks = seq(0, 1000, 20)) +
@@ -69,90 +70,110 @@ cotton %&gt;%
 <li>Get coefficients from model for use in <code>ggplot</code>.</li>
 <li>Make a line from coefficients, and plot it with the cotton yield data.</li>
 </ol>
-<pre class="r"><code># run model and graph all in one!
-quad_plateau &lt;- function(data) {
-  # initial values
-  ini_fit &lt;- lm(data = data, formula = yield ~ potassium)
-  ini_a &lt;- ini_fit$coefficients[[1]]
-  ini_b &lt;- ini_fit$coefficients[[2]]
-  ini_c &lt;- mean(data$potassium)
-  
-  # linear plateau model
-  qp_model &lt;&lt;- nlsLM(
-    formula = yield ~ qp(potassium, a, b, c),
-    data = data,
-    start = list(a = ini_a, b = ini_c, c = ini_c)
-  )
-  
-  print(summary(qp_model))
-  
-  
-  # Define null model
-  nullfunct &lt;- function(x, m) {
+<pre class="r"><code>quad_plateau &lt;- function(data, confidence = 90, plot = TRUE) {
+    # initial values
+    ini_fit &lt;- lm(yield ~ potassium, data = data)
+    ini_a &lt;- ini_fit$coef[[1]]
+    ini_b &lt;- ini_fit$coef[[2]]
+    ini_c &lt;- mean(data$potassium)
+    
+    
+    # linear plateau model
+    corr_model &lt;&lt;- nlsLM(
+            formula = yield ~ qp(potassium, a, b, c),
+            data = data,
+            start = list(a = ini_a, b = ini_c, c = ini_c)
+        )
+    
+    # Define null model
+    nullfunct &lt;- function(x, m) {
     m
-  }
-  m.ini &lt;- mean(data$yield)
-  
-  null &lt;- nls(
-    yield ~ nullfunct(potassium, m),
-    data = data,
-    start = list(m = m.ini),
-    trace = FALSE,
-    nls.control(maxiter = 1000)
-  )
-  
-  # Find p-value and pseudo R-squared
-  pseudo_r2 &lt;- nagelkerke(qp_model, null)[2]
-  print(pseudo_r2)
-  
-  # print and set confidence interval
-  confinterval &lt;- confint2(qp_model, level = 0.95)
-  conflo &lt;- round(confinterval[3, 1], 1)
-  confhi &lt;- round(confinterval[3, 2], 1)
-  print(&quot;Confidence Interval&quot;)
-  print(confinterval)
-  
-  plotNormalHistogram(residuals(qp_model))
-  plot(fitted(qp_model), residuals(qp_model))
-  
-  a  &lt;- coef(qp_model)[[1]]
-  b  &lt;- coef(qp_model)[[2]]
-  cc &lt;- coef(qp_model)[[3]]
-  quad &lt;- -0.5 * b / cc
-  plateau &lt;- a + b * cc + (-0.5 * b / cc) * cc * cc
-  
-  print(paste(&quot;Quad coeff&quot;, quad))
-  print(paste(&quot;Plateau at &quot;, plateau, &quot;% RY&quot;))
-  
-  # other plot
-  data %&gt;%
-    ggplot(aes(x = potassium, y = yield)) +
-    geom_point(size = 1, alpha = 0.5) +
-    geom_rug(alpha = 0.5, length = unit(2, &quot;pt&quot;)) +
-    geom_vline(xintercept = cc,
-               color = &quot;#CC0000&quot;) +
-    geom_vline(
-      xintercept = c(conflo, confhi),
-      color = &quot;#CC0000&quot;,
-      alpha = 0.2
-    ) +
-    geom_smooth(method = &quot;nlsLM&quot;,
-                formula = y ~ qp(x, a, b, c),
-                method.args = list(start = as.list(coef(qp_model))),
-                se = FALSE,
-                color = &quot;#4156a1&quot;,
-                size = 0.5) +
-    scale_x_continuous(breaks = seq(0, 1000, 20)) +
-    scale_y_continuous(breaks = seq(0, 200, 5)) +
-    labs(subtitle = paste0(
-      &quot;Critical concentraion = &quot;,
-      round(cc, 0),
-      &quot; ppm; 95% CL [&quot;,
-      conflo,
-      &quot;, &quot;,
-      confhi,
-      &quot;]&quot;
-    ))
+    }
+    
+    m.ini &lt;- mean(data$potassium)
+    
+    null &lt;- nls(yield ~ nullfunct(potassium, m),
+                data = data,
+                start = list(m = m.ini),
+                trace = FALSE,
+                nls.control(maxiter = 1000))
+    
+    # Find p-value and pseudo R-squared
+    pseudo_r2 &lt;- nagelkerke(corr_model, null)
+    
+    # print and set confidence interval
+    ci &lt;- confint2(corr_model, level = (confidence / 100))
+    cil &lt;- round(ci[3, 1], 1)
+    cih &lt;- round(ci[3, 2], 1)
+    
+    # check residuals
+    par(mfrow = c(2, 2))
+    plotNormalHistogram(residuals(corr_model))
+    plot(fitted(corr_model), residuals(corr_model))
+    par(mfrow = c(1, 1))
+    
+    # get model coefficients back for plotting
+    mod_a  &lt;- coef(corr_model)[[1]]
+    mod_b  &lt;- coef(corr_model)[[2]]
+    mod_c &lt;- coef(corr_model)[[3]]
+    curve_qp &lt;- -0.5 * mod_b / mod_c
+    plateau_qp &lt;-
+        mod_a + mod_b * mod_c + (-0.5 * mod_b / mod_c) * mod_c * mod_c
+    
+    # Printout
+    print(&quot;==========Pseudo-R-squared==========&quot;)
+    print(pseudo_r2$Pseudo.R.squared.for.model.vs.null)
+    print(&quot;==========Model Summary==========&quot;)
+    print(summary(corr_model))
+    print(&quot;==========Equation==========&quot;)
+    print(paste(round(mod_a, 2),&quot;+&quot;,
+                round(mod_b, 2),
+                &quot;x&quot;,
+                &quot;+&quot;,
+                round(mod_c, 2),
+                &quot;x^2&quot;))
+    print(&quot;==========Confidence Intervals==========&quot;)
+    print(ci)
+    print(paste(&quot;Quad coefficient&quot;, round(curve_qp, 4)))
+    print(paste(&quot;Quadratic-plateau at &quot;, round(plateau_qp, 1), &quot;% RY&quot;))
+
+    if (plot == TRUE)
+      data %&gt;%
+      ggplot(aes(potassium, yield)) +
+      geom_point(size = 1, alpha = 0.5) +
+      geom_rug(alpha = 0.5, length = unit(2, &quot;pt&quot;)) +
+      geom_vline(xintercept = mod_c,
+                 color = &quot;#CC0000&quot;) +
+      geom_vline(
+        xintercept = c(cil, cih),
+        color = &quot;#CC0000&quot;,
+        alpha = 0.2
+      ) +
+      geom_smooth(
+        method = &quot;nlsLM&quot;,
+        formula = y ~ qp(x, a, b, c),
+        method.args = list(start = as.list(coef(corr_model))),
+        se = FALSE,
+        color = &quot;#4156a1&quot;,
+        size = 0.5
+      ) +
+      scale_x_continuous(breaks = seq(0, 1000, 20)) +
+      scale_y_continuous(breaks = seq(0, 200, 5)) +
+      labs(
+        caption = paste(&quot;Each point is a site-year. n =&quot;, nrow(data)),
+        subtitle = paste0(
+          &quot;Plateau =&quot;,
+          round(plateau_qp, 1),
+          &quot;% RY.  &quot;,
+          &quot;Critical concentraion = &quot;,
+          round(mod_c, 0),
+          &quot; ppm with a&quot;, confidence,&quot;% CI [&quot;,
+          cil,
+          &quot;, &quot;,
+          cih,
+          &quot;]&quot;
+        )
+      )
 }</code></pre>
 </div>
 <div id="the-result" class="section level2">
@@ -163,7 +184,14 @@ quad_plateau &lt;- function(data) {
     &quot;Relative yield and soil potassium for&quot;, nrow(cotton), &quot;cotton trials&quot;),
     y = &quot;Relative yield (%)&quot;,
     x = &quot;Concentration of Soil Potassium (ppm)&quot;)</code></pre>
-<pre><code>## 
+<p><img src="/post/how-to-quad-plateau-R_files/figure-html/qp-3-1.png" width="672" /></p>
+<pre><code>## [1] &quot;==========Pseudo-R-squared==========&quot;
+##                              Pseudo.R.squared
+## McFadden                             0.131151
+## Cox and Snell (ML)                   0.676134
+## Nagelkerke (Cragg and Uhler)         0.676259
+## [1] &quot;==========Model Summary==========&quot;
+## 
 ## Formula: yield ~ qp(potassium, a, b, c)
 ## 
 ## Parameters:
@@ -179,21 +207,16 @@ quad_plateau &lt;- function(data) {
 ## Number of iterations to convergence: 5 
 ## Achieved convergence tolerance: 1.49e-08
 ## 
-## $Pseudo.R.squared.for.model.vs.null
-##                              Pseudo.R.squared
-## McFadden                             0.131151
-## Cox and Snell (ML)                   0.676134
-## Nagelkerke (Cragg and Uhler)         0.676259
-## 
-## [1] &quot;Confidence Interval&quot;
-##          2.5 %     97.5 %
-## a -34.95074113  60.678469
-## b   0.02508251   3.799781
-## c  45.49500195 126.899984</code></pre>
-<p><img src="/post/how-to-quad-plateau-R_files/figure-html/qp-3-1.png" width="672" /><img src="/post/how-to-quad-plateau-R_files/figure-html/qp-3-2.png" width="672" /></p>
-<pre><code>## [1] &quot;Quad coeff -0.0110933140978919&quot;
-## [1] &quot;Plateau at  95.2872743265962 % RY&quot;</code></pre>
-<p><img src="/post/how-to-quad-plateau-R_files/figure-html/qp-3-3.png" width="672" /></p>
+## [1] &quot;==========Equation==========&quot;
+## [1] &quot;12.86 + 1.91 x + 86.2 x^2&quot;
+## [1] &quot;==========Confidence Intervals==========&quot;
+##           5 %       95 %
+## a -26.6995591  52.427287
+## b   0.3507751   3.474088
+## c  52.5188739 119.876112
+## [1] &quot;Quad coefficient -0.0111&quot;
+## [1] &quot;Quadratic-plateau at  95.3 % RY&quot;</code></pre>
+<p><img src="/post/how-to-quad-plateau-R_files/figure-html/qp-3-2.png" width="672" /></p>
 <pre class="r"><code>ggsave(&quot;static/quad-plateau.png&quot;, dpi = 300, width = 7, height = 5)</code></pre>
 <p>```</p>
 <p>The critical soil concentration for potassium appears to be around 86 ppm, higher than the linear-plateau model. The confidence interval for the join-point is also wider than the “lp” model. The model summary shows that most of the error comes from the the <em>a</em> and <em>c</em> parameters, essentially the intercept and join-point. The pseudo-R<sup>2</sup> is about 0.67, so not too bad. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.</p>
