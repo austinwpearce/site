@@ -151,12 +151,6 @@ quad_plateau <- function(data, confidence = 90, plot = TRUE) {
     cil <- round(ci[3, 1], 1)
     cih <- round(ci[3, 2], 1)
     
-    # check residuals
-    par(mfrow = c(2, 2))
-    plotNormalHistogram(residuals(corr_model))
-    plot(fitted(corr_model), residuals(corr_model))
-    par(mfrow = c(1, 1))
-    
     # get model coefficients back for plotting
     mod_a  <- coef(corr_model)[[1]]
     mod_b  <- coef(corr_model)[[2]]
@@ -182,6 +176,13 @@ quad_plateau <- function(data, confidence = 90, plot = TRUE) {
     print(paste("Quad coefficient", round(curve_qp, 4)))
     print(paste("Quadratic-plateau at ", round(plateau_qp, 1), "% RY"))
 
+    # check residuals
+    par(mfrow = c(2, 2))
+    plotNormalHistogram(residuals(corr_model))
+    plot(fitted(corr_model), residuals(corr_model))
+    par(mfrow = c(1, 1))
+    
+    # For ggplot of data
     if (plot == TRUE)
       data %>%
       ggplot(aes(potassium, yield)) +
