@@ -1,8 +1,8 @@
 ---
 title: "Fit quadratic-plateau models in R"
-lastmod: "2021-05-12"
+lastmod: '2021-05-12'
 slug: quad-plateau
-description: "Agricultural yields go up a curve, then level off."
+description: Agricultural yields go up a curve, then level off.
 tags:
 - statistics
 - modeling
@@ -11,8 +11,8 @@ tags:
 - soil correlation
 - crops
 - R
-image: "/quad-plateau.png"
-editor_options: 
+image: /quad-plateau.png
+editor_options:
   chunk_output_type: console
 ---
 
@@ -227,7 +227,6 @@ quad_plateau &lt;- function(data, confidence = 95) {
 ## # ... with 5 more variables: se_b1 &lt;dbl&gt;, se_b2 &lt;dbl&gt;, pval_b0 &lt;chr&gt;,
 ## #   pval_b1 &lt;chr&gt;, pval_b2 &lt;chr&gt;</code></pre>
 <p><img src="/post/how-to-quad-plateau-R_files/figure-html/qp-3-1.png" width="672" /></p>
-<pre class="r"><code>ggsave(&quot;static/quad-plateau.png&quot;, dpi = 300, width = 7, height = 5)</code></pre>
 <p>The critical soil concentration for potassium appears to be around 86 ppm, higher than the linear-plateau model. The confidence interval for the join-point is also wider than the “lp” model. The model summary shows that most of the error comes from the the <em>a</em> and <em>c</em> parameters, essentially the intercept and join-point. The pseudo-R<sup>2</sup> is about 0.67, so pretty good for noisy yield data. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.</p>
 <p>Now, what if the two points with “high” STK (&gt; 180 ppm), were removed? How would that change the analysis? Go back and test yourself<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a>. How do other models compare? Linear-plateau? Mitscherlich-Bray?</p>
 </div>

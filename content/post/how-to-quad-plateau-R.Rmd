@@ -1,8 +1,8 @@
 ---
 title: "Fit quadratic-plateau models in R"
-lastmod: "2021-05-12"
+lastmod: '2021-05-12'
 slug: quad-plateau
-description: "Agricultural yields go up a curve, then level off."
+description: Agricultural yields go up a curve, then level off.
 tags:
 - statistics
 - modeling
@@ -11,8 +11,8 @@ tags:
 - soil correlation
 - crops
 - R
-image: "/quad-plateau.png"
-editor_options: 
+image: /quad-plateau.png
+editor_options:
   chunk_output_type: console
 ---
 
@@ -272,7 +272,7 @@ quad_plateau(cotton) +
     x = "Soil Test Potassium (ppm)")
 ```
 
-```{r save, eval=FALSE}
+```{r save, eval=FALSE, include=FALSE}
 ggsave("static/quad-plateau.png", dpi = 300, width = 7, height = 5)
 ```
 
