@@ -87,7 +87,7 @@ cotton %>%
 
 The relationship between soil-test potassium (STK) and relative cotton yield may be non-linear. Perhaps a polynomial function could be fit, or the data could be transformed, but we'll fit a non-linear model known as the quadratic-plateau. Quadratic-plateau models are also called **quad-plats**[^2]. Quad-plats are good in that they have a curved component (important to biological systems) followed by a zero-slope plateau (convenient for researchers).
 
-[^2]: `nlsLM()` is more reliabel overall than plain `nls()`. I've had pretty good luck with nls(), but sometimes it fails. `nlsLM()` seems to fail less. You can test their similarity by using *a*, *b*, *c* coefficients in the output of `nlsLM()` as inputs to `nls()`.
+[^2]: This isn't true, but I wish it was.
 
 ```{r qp-1}
 qp <- function(x, a, b, c) {
