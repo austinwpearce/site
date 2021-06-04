@@ -26,10 +26,5 @@ Also, before temples are dedicated for use by church members, there is always an
 
 ------------------------------------------------------------------------
 
-### Two Temple Photos
-
-![Temple in Bountiful Utah - Fall 2019](/bountiful-utah-temple.jpg)
-Temple in Bountiful Utah - Fall 2019
-
 ![Temple in Rexburg Idaho - Fall 2019](/rexburg-idaho-temple.jpg)
 Temple in Rexburg Idaho - Fall 2019
