@@ -18,6 +18,8 @@ image: "/i-dont-mind-sherbert.jpg"
 
 ## XKCD
 
+![](https://imgs.xkcd.com/comics/base_rate.png)
+
 ![](https://imgs.xkcd.com/comics/laptop_issues.png)
 
 I'm glad I don't work in IT. I do pride myself in being able to keep a good machine running for a long time.
