@@ -1,6 +1,6 @@
 ---
 title: "Fit quadratic-plateau models in R"
-lastmod: '2021-05-12'
+lastmod: '2021-07-13'
 slug: quad-plateau
 description: Agricultural yields go up a curve, then level off.
 tags:
@@ -19,18 +19,20 @@ editor_options:
 <script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
 
 
-<p>Like <a href="https://gradcylinder.org/linear-plateau/">my post on linear-plateau models in R</a>, this post is for the person<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> who has been googling how to fit quadratic-plateau models in R. One resource I came across in my googles was the <a href="https://rcompanion.org/handbook/I_11.html"><code>rcompanion</code></a> package, which was a big help in finally figuring out how to fit non-linear models to agricultural data.</p>
-<p>This post provides my creative function that helps one do quadratic-plateau fits <em>and</em> make a <code>ggplot</code> style figure all at once.</p>
-<p>So first, load some packages.</p>
-<pre class="r"><code>library(tidyverse)
-library(broom)
-library(rcompanion)
-library(minpack.lm)
-library(nlstools)
-library(agridat)</code></pre>
+<p>How does one fit a quadratic-plateau model in R?</p>
+<p>Like this:</p>
+<pre><code>quad_plateau(data)</code></pre>
+<p>Or at least that is how it works once I explain a few things. Like <a href="https://gradcylinder.org/linear-plateau/">my post on linear-plateau models in R</a>, this post is for the person<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> who has been googling how to fit quadratic-plateau models in R. This post provides my creative function that helps one do quadratic-plateau fits <em>and</em> make a <code>ggplot</code> style figure all at once.</p>
+<p>So first, get out your library card and borrow some packages.</p>
+<pre class="r"><code>library(tidyverse) # for data manipulation and plotting and so on
+library(minpack.lm)# for the model fitting
+library(broom)     # for getting model info in a tidy way
+library(rcompanion)# for the r-squared
+library(nlstools)  # for confidence intervals
+library(agridat)   # for the data</code></pre>
 <div id="the-data" class="section level2">
-<h2>The data</h2>
-<p>The data is from some cotton trials in the <code>agridat</code> package. Basically, more potassium measured in the soil should correlate to more cotton yield, but the relationship will not be linear. Fitting a model to determine something about this relationship is central to the soil-test correlation process. Let’s plot it.</p>
+<h2>The Data</h2>
+<p>The data is from some cotton trials in the <code>agridat</code> package. Basically, more potassium measured in the soil should correlate to more cotton yield, but likely the relationship will not be linear. Fitting a model to determine something about this relationship is central to the soil-test correlation process. Let’s plot it to see what we’re working with.</p>
 <pre class="r"><code>cotton &lt;- tibble(potassium = agridat::cate.potassium$potassium,
                  yield = agridat::cate.potassium$yield)
 
@@ -45,72 +47,114 @@ cotton %&gt;%
     y = &quot;Relative yield (%)&quot;,
     x = &quot;Concentration of Soil Potassium (ppm)&quot;)</code></pre>
 <p><img src="/post/how-to-quad-plateau-R_files/figure-html/data-1.png" width="672" /></p>
-<p>The relationship between soil-test potassium (STK) and relative cotton yield may be non-linear. Perhaps a polynomial function could be fit, or the data could be transformed, but we’ll fit a non-linear model known as the quadratic-plateau. Quadratic-plateau models are also called <strong>quad-plats</strong><a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>. Quad-plats are good in that they have a curved component (important to biological systems) followed by a zero-slope plateau (convenient for researchers).</p>
-<pre class="r"><code>qp &lt;- function(x, a, b, c) {
-    if_else(condition = x &lt; c,
-            true  = a + b * x + (-0.5 * b / c) * x * x,
-            false = a + b * c + (-0.5 * b / c) * c * c)
-}</code></pre>
-<p>This function says that up until some join-point, the relationship is a second-order polynomial (quadratic), after which it hits a flat line (plateau). This model is sometimes also called <em>quadratic-plus-plateau</em>. That join-point is important; in the context of soil fertility it represents a critical concentration for the nutrient in the soil. The join-point of a quad-plateau will always be higher than with a linear-plateau, an important consideration for later.</p>
-<p>Below is my big function to fit the model and either plot it visually or get useful numbers into a table. I’m not a function wizard, but I’m trying, so forgive any poor coding practices. That’s why in my function, I’ve just put in the variables <code>yield</code> and <code>potassium</code>,</p>
-<pre class="r"><code># only works if x = &quot;potassium&quot; and y = &quot;yield&quot;
-quad_plateau &lt;- function(data, confidence = 95) {
-    # initial values
-    initial_fit &lt;- lm(yield ~ poly(potassium, 2, raw = TRUE),
-                      data = data)
-    start_a &lt;- initial_fit$coef[[1]]
-    start_b &lt;- initial_fit$coef[[2]]
-    start_c &lt;- mean(data$potassium)
-    
-    # Quad plateau model
-    corr_model &lt;&lt;- nlsLM(
-        formula = yield ~ qp(potassium, a, b, c),
-        data = data,
-        start = list(a = start_a, b = start_b, c = start_c),
-        control  = nls.lm.control(maxiter = 1000)
+<p>The relationship between soil-test potassium (STK) and relative cotton yield may be nonlinear<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>. Perhaps a polynomial function could be fit, or the data could be transformed, but we’ll fit a non-linear model known as the quadratic-plateau. Quadratic-plateau (QP) models are also called <strong>quad-plats</strong><a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>. Quad-plats are good in that they have a curved component (important to biological systems) followed by a join point and a zero-slope plateau (convenient for researchers). Notice how the relative yield of the cotton does not appear to increase anymore from about 60-200 ppm K (the plateau!)</p>
+</div>
+<div id="the-functions" class="section level2">
+<h2>The Function(s)</h2>
+<p>The equation for the QP is essentially that of a quadratic up until the join point: y = B0 + B1x + Bx^2. While we could define the QP equation in the <code>nls()</code> function later, lets make a function. Actually, let’s make two functions<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a>.</p>
+<pre class="r"><code># b0 = intercept
+# b1 = slope
+# b2 = quadratic term
+# jp = join point = critical concentration
+
+qp &lt;- function(x, b0, b1, b2) {
+    jp &lt;- -0.5 * b1 / b2
+    if_else(
+        condition = x &lt; jp,
+        true  = b0 + (b1 * x) + (b2 * x * x),
+        false = b0 + (b1 * jp) + (b2 * jp * jp)
     )
+}
+
+qp_jp &lt;- function(x, b0, b1, jp) {
+    b2 &lt;- -0.5 * b1 / jp
+    if_else(
+        condition = x &lt; jp,
+        true  = b0 + (b1 * x) + (b2 * x * x),
+        false = b0 + (b1 * jp) + (b2 * jp * jp)
+    )
+}</code></pre>
+<p>These functions say that up until some join-point, the relationship is a second-order polynomial (quadratic), after which it hits a flat line (plateau). This model is sometimes also called quadratic<em>-<strong>plus</strong>-</em>plateau. That join-point is important; in the context of soil fertility it represents a critical concentration for the nutrient in the soil. The join point of a quad-plat will always be higher than with a linear-plateau, an important consideration for another time and place.</p>
+<p>The <code>qp</code> and <code>qp_jp</code> functions will be used inside the <code>nlsLM()</code> functions inside my <code>quad_plateau()</code> function soon. So look for them there.</p>
+<p>Next is my big <code>quad_plateau()</code> function that fits the QP model and either gets useful numbers into a table or plots it visually. I’m not a function wizard, but I’m trying, so forgive any poor coding practices. That’s why in my function, I’ve just put in the variables <code>yield</code> and <code>potassium</code>. Here are the steps of the function:</p>
+<ol style="list-style-type: decimal">
+<li><p>Get initial values for the <code>nlsLM()</code> function coming up.</p>
+<ul>
+<li>this can be done reliably by fitting a quadratic model, and yanking out coefficients.</li>
+</ul></li>
+<li><p>Run <code>nlsLM()</code><a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> with the <code>qp()</code> and <code>qp_jp()</code> functions as part of the formula.</p></li>
+<li><p>Make a null model, and get a pseudo-R<sup>2</sup> value.</p></li>
+<li><p>Get a confidence interval for the join-point (critical soil test value).</p></li>
+<li><p>Get coefficients from model for use in table and plot.</p></li>
+<li><p>Create a table of results.</p>
+<p>OR</p></li>
+<li><p>Plot the cotton yield data with a regression line using <code>nlsLM</code> and the model final values as starting values.</p></li>
+</ol>
+<pre class="r"><code>quad_plateau &lt;- function(data, confidence = 95, plot = FALSE) {
+    # initial values
+    start &lt;- lm(yield ~ poly(potassium, 2, raw = TRUE),
+                      data = data)
+    start_b0 &lt;- start$coef[[1]]
+    start_b1 &lt;- start$coef[[2]]
+    start_b2 &lt;- start$coef[[3]]
+    start_jp &lt;- mean(data$potassium)
     
-    # Residual plots and normality
-        # nls_resid &lt;- nlsResiduals(corr_model)
-        # plot(nls_resid, which = 0)
+    ### Quad plateau model ###
+    # nlsLM tends to converge/work better on average than nls, IMO
+    try(corr_model &lt;&lt;- minpack.lm::nlsLM(
+        formula = yield ~ qp(potassium, b0, b1, b2),
+        data = data,
+        start = list(b0 = start_b0,
+                     b1 = start_b1,
+                     b2 = start_b2)
+    ))
+    
+    try(corr_model_jp &lt;&lt;- minpack.lm::nlsLM(
+        formula = yield ~ qp_jp(potassium, b0, b1, jp),
+        data = data,
+        start = list(b0 = start_b0,
+                     b1 = start_b1,
+                     jp = start_jp)
+    ))
     
     # Define null model
     nullfunct &lt;- function(x, m) {
-      m
+        m
     }
     
-    m.ini &lt;- mean(data$yield)
+    m_ini &lt;- mean(data$yield)
     
     null &lt;- nls(yield ~ nullfunct(potassium, m),
                 data = data,
-                start = list(m = m.ini),
-                trace = FALSE,
-                control = nls.lm.control(maxiter = 1000))
+                start = list(m = m_ini),
+                trace = FALSE)
     
     # Find p-value and pseudo R-squared
+    model_error &lt;- round(summary(corr_model)$sigma, 2)
     pseudo_r2 &lt;- nagelkerke(corr_model, null)
-    label_pseudo_r2 &lt;- pseudo_r2$Pseudo.R.squared.for.model.vs.null[3]
+    label_pseudo_r2 &lt;- round(pseudo_r2$Pseudo.R.squared.for.model.vs.null[3], 2)
     
-    # print and set confidence interval
-    ci &lt;- confint2(corr_model, level = (confidence / 100))
-    ci_lower &lt;- round(ci[3, 1], 1)
-    ci_upper &lt;- round(ci[3, 2], 1)
+    # print and set confidence interval (use JP model)
+    ci &lt;- nlstools::confint2(corr_model_jp, level = (confidence / 100))
+    ci_lower &lt;- round(ci[3, 1], 0)
+    ci_upper &lt;- round(ci[3, 2], 0)
     
     # get model coefficients
     b0 &lt;- tidy(corr_model)$estimate[1]
     b1 &lt;- tidy(corr_model)$estimate[2]
-    jp &lt;- tidy(corr_model)$estimate[3] # jp = join point of segmented regression
-    b2 &lt;- round(-0.5 * b1 / jp, 4)
-    plateau_qp &lt;- round(
-        b0 + b1 * jp + (-0.5 * b1 / jp) * jp * jp, 2)
+    b2 &lt;- tidy(corr_model)$estimate[3] # quadratic term of equation
+    # critical concentration value = join point of segmented regression
+    cc &lt;- tidy(corr_model_jp)$estimate[3]
+    
+    plateau &lt;- round(b0 + (b1 * cc) + (b2 * cc * cc), 1)
     
     equation &lt;- paste0(round(b0, 1), &quot; + &quot;,
                        round(b1, 2), &quot;x + &quot;,
-                       round(b2, 3), &quot;x^2&quot;)
+                       round(b2, 3), &quot;xx&quot;)
     
-    se_b0 &lt;- tidy(corr_model)$std.error[1]
-    se_b1 &lt;- tidy(corr_model)$std.error[2]
-    se_b2 &lt;- tidy(corr_model)$std.error[3]
+    se_b0 &lt;- round(tidy(corr_model)$std.error[1], 2)
+    se_b1 &lt;- round(tidy(corr_model)$std.error[2], 2)
+    se_b2 &lt;- round(tidy(corr_model)$std.error[3], 3)
     
     pval_b0 &lt;- tidy(corr_model)$p.value[1]
     pval_b1 &lt;- tidy(corr_model)$p.value[2]
@@ -121,13 +165,13 @@ quad_plateau &lt;- function(data, confidence = 95) {
         tidy(corr_model)$p.value[1] &lt;= 0.001 ~ &quot;***&quot;,
         tidy(corr_model)$p.value[1] &lt;= 0.01 ~ &quot;**&quot;,
         tidy(corr_model)$p.value[1] &lt;= 0.05 ~ &quot;*&quot;)
-
+    
     pval_b1 &lt;- case_when(
         tidy(corr_model)$p.value[2] &gt; 0.05 ~ &quot;NS&quot;,
         tidy(corr_model)$p.value[2] &lt;= 0.001 ~ &quot;***&quot;,
         tidy(corr_model)$p.value[2] &lt;= 0.01 ~ &quot;**&quot;,
         tidy(corr_model)$p.value[2] &lt;= 0.05 ~ &quot;*&quot;)
-
+    
     pval_b2 &lt;- case_when(
         tidy(corr_model)$p.value[3] &gt; 0.05 ~ &quot;NS&quot;,
         tidy(corr_model)$p.value[3] &lt;= 0.001 ~ &quot;***&quot;,
@@ -135,107 +179,117 @@ quad_plateau &lt;- function(data, confidence = 95) {
         tidy(corr_model)$p.value[3] &lt;= 0.05 ~ &quot;*&quot;)
     
     # Printouts
-    print(
-      tibble(
-        equation,
-        plateau_qp,
-        critical = round(jp, 0),
-        ci_lower,
-        ci_upper,
-        model_rsq = pseudo_r2$Pseudo.R.squared.for.model.vs.null[3],
-        model_error = summary(corr_model)$sigma,
-        se_b0,
-        se_b1,
-        se_b2,
-        pval_b0,
-        pval_b1,
-        pval_b2
-      )
-    )
-      
-    # ggplot of data
-    data %&gt;%
-      ggplot(aes(x = potassium, y = yield)) +
-      geom_hline(yintercept = 100,
-                 alpha = 0.2) +
-      geom_vline(xintercept = round(jp, 0),
-                 linetype = 3,
-                 alpha = 0.5) +
-      geom_point(size = 2, alpha = 0.5) +
-      geom_line(
-        stat = &quot;smooth&quot;,
-        method = &quot;nlsLM&quot;,
-        formula = y ~ qp(x, a, b, c),
-        method.args = list(start = as.list(coef(corr_model))),
-        se = FALSE,
-        color = &quot;black&quot;,
-        alpha = 0.5,
-      ) +
-      annotate(
-        &quot;text&quot;,
-        label = paste(
-          equation,
-          &quot;\nR^2 =&quot;,
-          round(label_pseudo_r2, 3),
-          &quot;\nPlateau =&quot;,
-          round(plateau_qp, 1),
-          &quot;% RY&quot;,
-          &quot;\nCritical conc. =&quot;,
-          round(jp, 0),
-          &quot;ppm&quot;,
-          &quot;\nConf Int [&quot;,
-          ci_lower,
-          &quot;,&quot;,
-          ci_upper,
-          &quot;]&quot;
-        ),
-        x = max(data$potassium) * 0.7,
-        y = min(data$yield) * 1.2,
-        hjust = 0,
-        family = rc
-      )
+    if (plot == FALSE) {
+        tibble(
+            equation,
+            plateau,
+            critical = round(cc, 0),
+            ci_lower,
+            ci_upper,
+            r_square = label_pseudo_r2,
+            model_error,
+            AIC = round(AIC(corr_model),0),
+            BIC = round(BIC(corr_model),0),
+            se_b0,
+            se_b1,
+            se_b2,
+            pval_b0,
+            pval_b1,
+            pval_b2
+        )
+    } else {
+        # Residual plots and normality
+        #nls_resid &lt;- nlsResiduals(corr_model)
+        #plot(nls_resid, which = 0)
+        
+      # ggplot of data
+      data %&gt;%
+        ggplot(aes(x = potassium, y = yield)) +
+        geom_point(size = 2, alpha = 0.5) +
+        geom_rug(alpha = 0.5, length = unit(2, &quot;pt&quot;)) +
+        geom_vline(xintercept = round(cc, 0),
+                   linetype = 3,
+                   alpha = 0.5) +
+        geom_line(
+          stat = &quot;smooth&quot;,
+          method = &quot;nlsLM&quot;,
+          formula = y ~ qp(x, b0, b1, b2),
+          method.args = list(start = as.list(coef(corr_model))),
+          se = FALSE,
+          alpha = 0.5
+        ) +
+        annotate(
+          &quot;text&quot;,
+          label = paste(
+            equation,
+            &quot;\nR^2 =&quot;,
+            label_pseudo_r2,
+            &quot;\nPlateau =&quot;,
+            round(plateau, 1),
+            &quot;% RY&quot;,
+            &quot;\nCritical conc. =&quot;,
+            round(cc, 0),
+            &quot;ppm&quot;,
+            &quot;\nConf Int [&quot;,
+            ci_lower,
+            &quot;,&quot;,
+            ci_upper,
+            &quot;]&quot;
+          ),
+          x = max(data$potassium) * 0.7,
+          y = min(data$yield) + 5,
+          hjust = 0,
+          family = &quot;Roboto Condensed&quot;
+        ) +
+        scale_x_continuous(breaks = seq(0, 1000, 20)) +
+        scale_y_continuous(breaks = seq(0, 200, 5))
+    }
+    
 }</code></pre>
-</div>
-<div id="what-is-going-on-in-that-function" class="section level2">
-<h2>What is going on in that ‘function’?</h2>
-<ol style="list-style-type: decimal">
-<li>Get initial values for the <code>nlsLM()</code> function coming up.</li>
-</ol>
-<ul>
-<li>this can be done by fitting a quadratic model, and yanking out coefficients.</li>
-</ul>
-<ol start="2" style="list-style-type: decimal">
-<li>Run <code>nlsLM()</code><a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> with the <code>qp()</code> model as part of the formula.</li>
-<li>Make a null model, and get a pseudo-R<sup>2</sup> value.</li>
-<li>Get a confidence interval for the join-point (critical soil test value).</li>
-<li>Get coefficients from model for use in table and plot.</li>
-<li>Make a line from coefficients, and plot it with the cotton yield data.</li>
-</ol>
 </div>
 <div id="the-result" class="section level2">
 <h2>The result</h2>
 <p>So how do you fit a quadratic-plateau model in R? Like this:</p>
-<pre class="r"><code>quad_plateau(cotton) +
+<pre class="r"><code>quad_plateau(cotton)</code></pre>
+<pre><code>## # A tibble: 1 x 15
+##   equation   plateau critical ci_lower ci_upper r_square model_error   AIC   BIC
+##   &lt;chr&gt;        &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 12.9 + 1.~    95.3       86       45      127     0.68        10.8   187   192
+## # ... with 6 more variables: se_b0 &lt;dbl&gt;, se_b1 &lt;dbl&gt;, se_b2 &lt;dbl&gt;,
+## #   pval_b0 &lt;chr&gt;, pval_b1 &lt;chr&gt;, pval_b2 &lt;chr&gt;</code></pre>
+<p>The model is written out in a data frame, ready for other use and manipulation. This is really helpful if for example you have a grouped data frame of different fertilizer trials, and want to perform a QP fit to each group using something like <a href="https://dplyr.tidyverse.org/reference/group_map.html"><code>group_modify()</code></a>.</p>
+<p>If you want to plot it along with an overlay of model results, use the <code>plot = TRUE</code> argument and add your labels. Use <code>group_map()</code> if you want to “loop” this over multiple groups in your data frame.</p>
+<pre class="r"><code>quad_plateau(cotton, plot = TRUE) +
   labs(title = paste(
     &quot;Relative yield and soil potassium for&quot;, nrow(cotton), &quot;cotton trials&quot;),
     y = &quot;Relative yield (%)&quot;,
     x = &quot;Soil Test Potassium (ppm)&quot;)</code></pre>
-<pre><code>## # A tibble: 1 x 13
-##   equation     plateau_qp critical ci_lower ci_upper model_rsq model_error se_b0
-##   &lt;chr&gt;             &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt; &lt;dbl&gt;
-## 1 12.9 + 1.91~       95.3       86     45.5     127.     0.676        10.8  23.0
-## # ... with 5 more variables: se_b1 &lt;dbl&gt;, se_b2 &lt;dbl&gt;, pval_b0 &lt;chr&gt;,
-## #   pval_b1 &lt;chr&gt;, pval_b2 &lt;chr&gt;</code></pre>
-<p><img src="/post/how-to-quad-plateau-R_files/figure-html/qp-3-1.png" width="672" /></p>
-<p>The critical soil concentration for potassium appears to be around 86 ppm, higher than the linear-plateau model. The confidence interval for the join-point is also wider than the “lp” model. The model summary shows that most of the error comes from the the <em>a</em> and <em>c</em> parameters, essentially the intercept and join-point. The pseudo-R<sup>2</sup> is about 0.67, so pretty good for noisy yield data. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.</p>
-<p>Now, what if the two points with “high” STK (&gt; 180 ppm), were removed? How would that change the analysis? Go back and test yourself<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a>. How do other models compare? Linear-plateau? Mitscherlich-Bray?</p>
+<p><img src="/post/how-to-quad-plateau-R_files/figure-html/qp-4-1.png" width="672" /></p>
+<p>The critical soil concentration for potassium appears to be around 86 ppm, higher than the linear-plateau model. The confidence interval for the join-point is also wider than the “lp” model. In fact, the confidence interval is just wide. This is one of the problems with getting the confidence limits from the join point, rather than at a lower point such as 95% of the maximum (plateau), but this is to be discussed at another time and place.</p>
+<p>The model summary shows that the quadratic term is not actually statistically significant. It may be then that a linear-plateau model would be better for this dataset. The pseudo-R<sup>2</sup> is about 0.67, so pretty good for noisy crop yield data. Still, the distribution of points has gaps in it, which limits the confidence of the correlation.</p>
+<p>Now, what if the two points with “high” STK (&gt; 180 ppm), were removed? How would that change the analysis? Go back and test yourself<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a>. How do other models compare? Linear-plateau? Mitscherlich-Bray?</p>
+</div>
+<div id="other-resources-about-nonlinear-functions-in-r" class="section level2">
+<h2>Other resources about nonlinear functions in R</h2>
+<ul>
+<li><p><a href="https://rcompanion.org/handbook/I_11.html"><code>rcompanion</code></a> package - gave me a good jumpstart and has some useful functions inside</p></li>
+<li><p><a href="https://cran.r-project.org/web/packages/nlstools/nlstools.pdf"><code>nlstools</code></a> package</p></li>
+<li><p><a href="https://femiguez.github.io/nlraa-docs/index.html"><code>nlraa</code></a> package by Fernando Miguez</p>
+<ul>
+<li>he also has a series of <a href="https://www.youtube.com/watch?v=fIQV4JxXnnA">YouTube videos</a> worth checking out.</li>
+</ul></li>
+<li><p><a href="https://cran.r-project.org/web/packages/easynls/easynls.pdf"><code>easynls</code></a> package - it’s quick and dirty, but not as useful as it could be</p></li>
+<li><p><a href="https://github.com/padpadpadpad/nls.multstart"><code>nls.multstart</code></a> package - tries lots of starting values to try and better get at the best values for the equation. But I think for QP models, my approach works fine and using multiple starting values is unnecessary.</p></li>
+</ul>
 </div>
 <div class="footnotes">
 <hr />
 <ol>
 <li id="fn1"><p>Probably a grad student<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
-<li id="fn2"><p>This isn’t true, but I wish it was.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
-<li id="fn3"><p><code>nlsLM()</code> seems more reliable overall than plain <code>nls()</code> from base R. I’ve had decent luck with nls(), but sometimes it fails. <code>nlsLM()</code> seems to fail less. You can test their similarity by using <em>a</em>, <em>b</em>, <em>c</em> coefficients in the output of <code>nlsLM()</code> as inputs to <code>nls()</code>.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
-<li id="fn4"><p>Hint: <code>filter()</code><a href="#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>No one will judge you if you hold a clear, plastic ruler up to your computer screen.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>This isn’t true, but I wish it was.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+<li id="fn4"><p>I’m humble enough to admit that, as of now, I can’t figure out how to write one function that gets me 4 model parameters instead of three AND doesn’t yell at me for creating a singularity in space or something. So I’m using two functions, one to get the first three (intercept, slope, and quadratic term) and then the second to get the join point.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p><code>nlsLM()</code> seems more reliable overall than plain <code>nls()</code> from base R. I’ve had decent luck with nls(), but sometimes it fails. <code>nlsLM()</code> seems to fail less, probably due to using a different algorithm. You can test their similarity in reaching the same final results by using the output of <code>nlsLM()</code> as starting values in <code>nls()</code>.<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
+<li id="fn6"><p>Hint: <code>filter()</code><a href="#fnref6" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
